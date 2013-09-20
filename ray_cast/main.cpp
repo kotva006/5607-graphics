@@ -4,13 +4,13 @@
 #include <cstring>
 
 #include "scene.h"
+#include "picture.h"
 
 
 
 void print_usage() {
-  char *usage_1 = "This command takes only one input.\n";
-  char *usage_2 = "This input needs to be a file.\n";
-  std::cout << strcat(usage_1, usage_2);
+  std::cout <<  "This command takes only one input.\n";
+  std::cout <<  "This input needs to be a file.\n";
 }
 
 
@@ -24,7 +24,9 @@ int main (int argc, char *argv[]) {
 
   Scene *scene = new Scene();
   scene->createScene(argv[1]);
+  
 
+  Picture *picture = new Picture(scene);
   return 0;
 
 }

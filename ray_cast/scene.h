@@ -18,9 +18,9 @@ class Scene {
     float pixheight;
     float pixwidth;
     float bkgcolor[3];
-    std::vector<Objects> *object;
+    std::vector<Objects*> *object;
 
-    Scene* createScene(char*);
+    void createScene(char*);
     void findPixHeight(){};
 } ;
 

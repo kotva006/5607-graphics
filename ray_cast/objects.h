@@ -3,7 +3,7 @@
 
 class Objects {
   public:
-    Objects();
+    Objects(){};
     ~Objects(){};
     float position[3];
     float materialcolor[3];

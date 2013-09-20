@@ -3,18 +3,17 @@
 #include <sstream>
 #include <string>
 #include <iostream>
+#include <math.h>
 
 #include "scene.h"
 
-Scene* Scene::createScene(char *name) {
+void Scene::createScene(char *name) {
 
   std::ifstream inFile;
   inFile.open(name);
   if (!inFile.is_open()) {
-    return NULL;
+    return;
   }
-
-  Scene *file = new Scene();
   
   std::string line = ""; 
   std::string value = "";
@@ -23,58 +22,60 @@ Scene* Scene::createScene(char *name) {
   float mc2 = 0.0;
   float mc3 = 0.0;
     
-  while ( inFile.getline(inFile, line)) {
+  while ( getline(inFile, line)) {
   
     std::istringstream iss(line);
     iss >> value;
 
-    switch(value) {
-      case "eye":
-        iss >> file->eye[0];
-        iss >> file->eye[1];
-        iss >> file->eye[2];
-        break;
-      case "viewdir":
-        iss >> file->viewdir[0];
-        iss >> file->viewdir[1];
-				iss >> file->viewdir[2];
-				break;
-			case "updir":
-				iss >> file->updir[0];
-				iss >> file->updir[1];
-				iss >> file->updir[2];
-				break;
-			case "viewdist":
-				iss >> file->viewdist;
-				break;
-			case "fovv":
-				iss >> file->fovv;
-				break;
-			case "aspect":
-				iss >> file->aspect;
-        break;
-      case "pixheight":
-        iss >> file->pixheight;
-        file->findPixHeight();
-        break;
-      case "bkgcolor":
-				iss >> file->bkgcolor[0];
-        iss >> file->bkgcolor[1];
-				iss >> file->bkgcolor[2];
-        break;
-      case "materialcolor":
+    if (value.compare("eye") == 0) {
+        iss >> this->eye[0];
+        iss >> this->eye[1];
+        iss >> this->eye[2];
+    } else if (value.compare("viewdir") == 0) {
+        iss >> this->viewdir[0];
+        iss >> this->viewdir[1];
+				iss >> this->viewdir[2];
+	  } else if (value.compare("updir") == 0) {
+				iss >> this->updir[0];
+				iss >> this->updir[1];
+				iss >> this->updir[2];
+	  } else if (value.compare("viewdist") == 0) {
+				iss >> this->viewdist;
+		} else if (value.compare("fovv") == 0) {
+				iss >> this->fovv;
+		} else if (value.compare("aspect") == 0) {
+				iss >> this->aspect;
+    } else if (value.compare("pixheight") == 0) {
+        iss >> this->pixheight;
+        this->findPixHeight();
+    } else if (value.compare("bkgcolor") == 0) {
+				iss >> this->bkgcolor[0];
+        iss >> this->bkgcolor[1];
+				iss >> this->bkgcolor[2];
+    } else if (value.compare("materialcolor") == 0) {
+        // store color attributes
         iss >> mc1;
         iss >> mc2;
         iss >> mc3;
-        break;
-      default:
-        std::cout << "Invalid option " + value;
+        // First gets the color of the object,
+        // then gets the type of shape
+        getline(inFile, line);
+        std::istringstream sss(line);
+        sss >> value;
+        if (value.compare("sphere")) {
+          // Creates a sphere with the input color extracted above
+          // Then sets the position and the radius of the sphere
+          Sphere *sphere = new Sphere(mc1,mc2,mc3);
+          sss >> sphere->position[0];
+          sss >> sphere->position[1];
+          sss >> sphere->position[2];
+          sss >> sphere->radius;
+          this->object->push_back(dynamic_cast<Objects*>(sphere));
+        }
+    } else {
+        std::cout << "Invalid option " + value + "\n";
     }
-
   }
-
-  return file;
-
 }
 
    
