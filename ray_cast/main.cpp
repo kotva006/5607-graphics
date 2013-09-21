@@ -6,11 +6,11 @@
 #include "scene.h"
 #include "picture.h"
 
-
+using namespace std;
 
 void print_usage() {
-  std::cout <<  "This command takes only one input.\n";
-  std::cout <<  "This input needs to be a file.\n";
+  cout <<  "This command takes only one input.\n";
+  cout <<  "This input needs to be a file.\n";
 }
 
 
@@ -27,6 +27,7 @@ int main (int argc, char *argv[]) {
   
 
   Picture *picture = new Picture(scene);
+  cout << picture->data;
   return 0;
 
 }
