@@ -35,7 +35,9 @@ void Scene::createScene(char *name) {
 
     if (value.compare("eye") == 0) {
         cout << "NOO";
-        iss >> (this->eye->x);
+        float temp = 0.0;
+        iss >>  temp;
+        (this->eye->x = temp;
         //cout << "stuff";
         //iss >> this->eye->y;
         //iss >> this->eye->z;
