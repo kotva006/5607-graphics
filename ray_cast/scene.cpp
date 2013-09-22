@@ -1,14 +1,9 @@
-
 #include <fstream>
 #include <sstream>
 #include <string>
 #include <iostream>
-#include <math.h>
 
 #include "scene.h"
-#include "vec.h"
-
-#define PI 3.14159265
 
 using namespace std;
 
@@ -31,24 +26,19 @@ void Scene::createScene(char *name) {
   
     istringstream iss(line);
     iss >> value;
-    cout << value + "\n";
 
     if (value.compare("eye") == 0) {
-        cout << "NOO";
-        float temp = 0.0;
-        iss >>  temp;
-        (this->eye->x = temp;
-        //cout << "stuff";
-        //iss >> this->eye->y;
-        //iss >> this->eye->z;
+        iss >> this->eye[0];
+        iss >> this->eye[1];
+        iss >> this->eye[2];
     } else if (value.compare("viewdir") == 0) {
-        iss >> this->viewdir->x;
-        iss >> this->viewdir->y;
-				iss >> this->viewdir->z;
+        iss >> this->viewdir[0];
+        iss >> this->viewdir[1];
+				iss >> this->viewdir[2];
 	  } else if (value.compare("updir") == 0) {
-				iss >> this->updir->x;
-				iss >> this->updir->y;
-				iss >> this->updir->z;
+				iss >> this->updir[0];
+				iss >> this->updir[1];
+				iss >> this->updir[2];
 	  } else if (value.compare("viewdist") == 0) {
 				iss >> this->viewdist;
 		} else if (value.compare("fovv") == 0) {
@@ -57,11 +47,11 @@ void Scene::createScene(char *name) {
 				iss >> this->aspect;
     } else if (value.compare("pixheight") == 0) {
         iss >> this->pixheight;
-        //this->findPixWidth();
+        this->findPixWidth();
     } else if (value.compare("bkgcolor") == 0) {
-				iss >> this->bkgcolor->x;
-        iss >> this->bkgcolor->y;
-				iss >> this->bkgcolor->z;
+				iss >> this->bkgcolor[0];
+        iss >> this->bkgcolor[1];
+				iss >> this->bkgcolor[2];
     } else if (value.compare("materialcolor") == 0) {
         // store color attributes
         iss >> mc1;
@@ -76,9 +66,9 @@ void Scene::createScene(char *name) {
           // Creates a sphere with the input color extracted above
           // Then sets the position and the radius of the sphere
           Sphere *sphere = new Sphere(mc1,mc2,mc3);
-          sss >> sphere->position->x;
-          sss >> sphere->position->y;
-          sss >> sphere->position->z;
+          sss >> sphere->position[0];
+          sss >> sphere->position[1];
+          sss >> sphere->position[2];
           sss >> sphere->radius;
           this->object->push_back(dynamic_cast<Objects*>(sphere));
         }
@@ -87,3 +77,8 @@ void Scene::createScene(char *name) {
     }
   }
 }
+
+void Scene::findPixWidth() {
+  this->pixwidth = this->pixheight * this->aspect;
+}
+

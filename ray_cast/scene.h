@@ -4,21 +4,20 @@
 #include <vector>
 
 #include "objects.h"
-#include "vec.h"
 
 class Scene {
   public:
     Scene() {};
     ~Scene(){};
-    vec *eye;
-    vec *viewdir;
-    vec *updir;
+    float eye[3];
+    float viewdir[3];
+    float updir[3];
     float viewdist;
     float fovv;
     float aspect;
     float pixheight;
     float pixwidth;
-    vec *bkgcolor;
+    float bkgcolor[3];
     std::vector<Objects*> *object;
 
     void createScene(char*);

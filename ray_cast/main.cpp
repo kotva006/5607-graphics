@@ -5,6 +5,8 @@
 
 #include "scene.h"
 #include "picture.h"
+#include "vectors.h"
+#include "window.h"
 
 using namespace std;
 
@@ -25,6 +27,7 @@ int main (int argc, char *argv[]) {
   Scene *scene = new Scene();
   scene->createScene(argv[1]);
   
+  Window *window = new Window(scene);
 
   Picture *picture = new Picture(scene);
   cout << picture->data;

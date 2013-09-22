@@ -9,6 +9,7 @@ class Picture {
     ~Picture(){};
     Picture(Scene*);
     std::string data;
+    void append(std::string);
     
 } ;
 

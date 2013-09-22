@@ -15,3 +15,7 @@ Picture::Picture(Scene *s) {
   this->data = "P3\n" + width + "\n" + height + "\n255\n";
 
 }
+
+void Picture::append(string s) {
+  this->data = this->data + s;
+}
