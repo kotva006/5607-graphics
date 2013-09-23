@@ -2,6 +2,7 @@
 #define SCENE_H
 
 #include <vector>
+#include <string>
 
 #include "objects.h"
 
@@ -15,10 +16,10 @@ class Scene {
     float viewdist;
     float fovv;
     float aspect;
-    float pixheight;
-    float pixwidth;
+    int   pixheight;
+    int   pixwidth;
     float bkgcolor[3];
-    std::vector<Objects*> *object;
+    std::vector<Sphere*> object;
 
     void createScene(char*);
     void findPixWidth();

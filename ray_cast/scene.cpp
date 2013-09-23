@@ -51,7 +51,7 @@ void Scene::createScene(char *name) {
     } else if (value.compare("bkgcolor") == 0) {
 				iss >> this->bkgcolor[0];
         iss >> this->bkgcolor[1];
-				iss >> this->bkgcolor[2];
+        iss >> this->bkgcolor[2];
     } else if (value.compare("materialcolor") == 0) {
         // store color attributes
         iss >> mc1;
@@ -62,7 +62,7 @@ void Scene::createScene(char *name) {
         getline(inFile, line);
         istringstream sss(line);
         sss >> value;
-        if (value.compare("sphere")) {
+        if (value.compare("sphere") == 0) {
           // Creates a sphere with the input color extracted above
           // Then sets the position and the radius of the sphere
           Sphere *sphere = new Sphere(mc1,mc2,mc3);
@@ -70,15 +70,16 @@ void Scene::createScene(char *name) {
           sss >> sphere->position[1];
           sss >> sphere->position[2];
           sss >> sphere->radius;
-          this->object->push_back(dynamic_cast<Objects*>(sphere));
+          this->object.push_back(sphere);
         }
     } else {
         cout << "Invalid option " + value + "\n";
     }
   }
+  inFile.close();
 }
 
 void Scene::findPixWidth() {
-  this->pixwidth = this->pixheight * this->aspect;
+  this->pixwidth = (int) (((float) this->pixheight) * this->aspect);
 }
 

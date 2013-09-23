@@ -16,6 +16,8 @@ class Window {
     float *ur; //up right corner of window
     float *ll; //lower left corner of window
     float *lr; //lower right corner of window
+    float *deltah;
+    float *deltav;
     
 } ;
 

@@ -33,6 +33,16 @@ namespace vec {
 
   } 
 
+  float* div(float *v, float c) {
+
+    float *r = (float*) malloc(sizeof(float) * 3);
+    r[0] = v[0] / c;
+    r[1] = v[1] / c;
+    r[2] = v[2] / c;
+    return r;
+
+  }
+
   float* crossproduct(float* v1,float* v2) {
     float *rvec = (float*) malloc(sizeof(float) * 3);
     rvec[0] = (v1[1] * v2[2]) - (v2[1] * v1[2]);

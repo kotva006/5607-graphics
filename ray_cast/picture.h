@@ -10,6 +10,7 @@ class Picture {
     Picture(Scene*);
     std::string data;
     void append(std::string);
+    std::string dump(){return data;};
     
 } ;
 

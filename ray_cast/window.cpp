@@ -29,5 +29,8 @@ Window::Window(Scene *s) {
   this->ul = add(s->eye, sub(mul(s->viewdist,n), 
                  add(mul((this->h/2.0),v), mul((this->w/2.0),u))));
 
+  this->deltah = div(sub(this->ur, this->ul), (float)(s->pixwidth - 1));
+  this->deltav = div(sub(this->ll, this->ul), (float)(s->pixheight - 1));
+
 }
 
