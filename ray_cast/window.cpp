@@ -30,10 +30,10 @@ Window::Window(Scene *s) {
   this->ur = add(s->eye, add(mul(s->viewdist,n), 
                  add(mul((this->h/2.0),v), mul((this->w/2.0),u))));
 
-  this->ll = add(s->eye, sub(mul(s->viewdist,n), 
+  this->lr = add(s->eye, sub(mul(s->viewdist,n), 
                  sub(mul((this->h/2.0),v), mul((this->w/2.0),u))));
 
-  this->lr = add(s->eye, sub(mul(s->viewdist,n), 
+  this->ll = add(s->eye, sub(mul(s->viewdist,n), 
                  add(mul((this->h/2.0),v), mul((this->w/2.0),u))));
   
   std::cout << "UL: " << this->ul[0] << " " << this->ul[1] << " " << this->ul[2] << "\n";
