@@ -20,16 +20,29 @@ void print_usage() {
 
 int main (int argc, char *argv[]) {
 
+
+  /**
+   * This checks for the correct type of inputs
+   */
   if (argc != 2) {
 		print_usage();
     exit(0);
   }
 
+
+  //cout << "Creating Scene...\n";
   Scene *scene = new Scene();
   scene->createScene(argv[1]);
-  
+
+  if (scene->error) {
+    cout << "Invalid file name: " << argv[1] << "\n";
+    exit(1);
+  }
+
+  //cout << "Defining window...\n"; 
   Window *w = new Window(scene);
 
+  //cout << "Initializing picture...\n";
   Picture *picture = new Picture(scene);
 
   int i,j;
@@ -37,61 +50,60 @@ int main (int argc, char *argv[]) {
   int counter = 0;
   float *winpos, *raydir;
   string data = "";
-  float mc = 255;
+  float mc = 255; // Max color value
 
-  cout << "starting loop\n";
+  //cout << "Starting loop...\n";
 
-  float test[3] = {1,0,0};
-  float test2[3] = {0,1,0};
-  float *res = vec::crossproduct(test,test2);
-  cout << "C: " << res[0] << " " << res[1] << " " << res[2] << "\n";
-  cout << "Color: " << scene->object[0]->materialcolor[0] << "\n";
-
+  /*
+   * This loop does the main work of processing each of the rays.
+   * It sends a ray through every pixel of the picture and if it hits any
+   * of the defined objects, color of the pixel gets set to the color of that
+   * object, else it gets the background color.
+   * Finally if the color is determined it gets added to the data of the
+   * picture.
+   */
   for ( i=0; i<scene->pixheight; i++) {
     for ( j=0; j<scene->pixwidth; j++) {
       winpos = vec::add(w->ul, vec::add(
                vec::mul(j,w->deltah), vec::mul(i,w->deltav)));
       raydir = vec::normalize(vec::sub(winpos,scene->eye)); 
-      //cout << "H: " << w->deltah[1] << " W: " << w->deltav[1] << "\n";
+       
+      char color[13];
+      sprintf(color, "%d %d %d ", (int)(scene->bkgcolor[0] * mc),
+                                  (int)(scene->bkgcolor[1] * mc),
+                                  (int)(scene->bkgcolor[2] * mc));
       for (k=0; k<scene->object.size(); k++) {
         float d = (float)pow((double)scene->object[k]->B(scene->eye,raydir),2)-
                   (4*scene->object[k]->C(scene->eye,raydir));
-        char color[13];
-        //if (true) {cout << "D: " << (4*scene->object[k]->C(scene->eye,raydir)) << "\n";}
+
         if(d >= 0) {
           sprintf(color, "%d %d %d ", (int)(scene->object[k]->materialcolor[0] * mc),
                                       (int)(scene->object[k]->materialcolor[1] * mc),
                                       (int)(scene->object[k]->materialcolor[2] * mc));
-          //cout << "Hit";
-        } else {
-          sprintf(color, "%d %d %d ", (int)scene->bkgcolor[0],
-                                      (int)scene->bkgcolor[1],
-                                      (int)scene->bkgcolor[2]);
         }
-        counter++;
-        if (counter > 4) {
-          counter = 0;
-          strcat(color, "\n");
-        }
-          
-        data.assign(color);
-
-        picture->append(data);
-        data = "";
-        
       }
+      // This assures we don't go over the 70 char per line limit of ppm
+      counter++;
+      if (counter > 4) {
+        counter = 0;
+        strcat(color, "\n");
+      }
+      // Adding data to picture
+      data.assign(color);
+      picture->append(data);
+      data = "";
+
     }
   }
-
+  //creates the output file of the scene
   ofstream outFile;
-  outFile.open("sample.ppm");
+  char fileName[100] = "\0";
+  strcat(fileName,argv[1]);
+  strcat(fileName,".ppm");
+  outFile.open(fileName);
   outFile << picture->dump();
   outFile.close();
 
   return 0;
 
 }
-
-
-
-  

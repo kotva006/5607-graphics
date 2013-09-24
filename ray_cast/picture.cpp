@@ -6,6 +6,10 @@
 
 using namespace std;
 
+/*
+ * This file holds the data of the picture
+ */
+
 Picture::Picture(Scene *s) {
   
   stringstream ss (stringstream::in | stringstream::out); 

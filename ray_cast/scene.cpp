@@ -12,6 +12,7 @@ void Scene::createScene(char *name) {
   ifstream inFile;
   inFile.open(name);
   if (!inFile.is_open()) {
+    this->error = true;
     return;
   }
   
@@ -21,7 +22,9 @@ void Scene::createScene(char *name) {
   float mc1 = 0.0;
   float mc2 = 0.0;
   float mc3 = 0.0;
-    
+  
+  // Gets each line of the input file, and then adds the data to the scene
+  
   while ( getline(inFile, line)) {
   
     istringstream iss(line);
@@ -59,18 +62,28 @@ void Scene::createScene(char *name) {
         iss >> mc3;
         // First gets the color of the object,
         // then gets the type of shape
-        getline(inFile, line);
-        istringstream sss(line);
-        sss >> value;
-        if (value.compare("sphere") == 0) {
-          // Creates a sphere with the input color extracted above
-          // Then sets the position and the radius of the sphere
-          Sphere *sphere = new Sphere(mc1,mc2,mc3);
-          sss >> sphere->position[0];
-          sss >> sphere->position[1];
-          sss >> sphere->position[2];
-          sss >> sphere->radius;
-          this->object.push_back(sphere);
+        // Creates spheres for every sphere in the file
+        // checking for colors along the way
+        // Color is treated like a state, if we intercept a new color we
+        // change it to that new color
+        while(getline(inFile, line)) {
+            istringstream sss(line);
+            sss >> value;
+            if (value.compare("sphere") == 0) {
+              // Creates a sphere with the input color extracted
+              // Then sets the position and the radius of the sphere
+              Sphere *sphere = new Sphere(mc1,mc2,mc3);
+              sss >> sphere->position[0];
+              sss >> sphere->position[1];
+              sss >> sphere->position[2];
+              sss >> sphere->radius;
+              this->object.push_back(sphere);
+            } else if (value.compare("materialcolor") == 0) {
+              sss >> mc1;
+              sss >> mc2;
+              sss >> mc3;
+            }
+            value = "";
         }
     } else {
         cout << "Invalid option " + value + "\n";

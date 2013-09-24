@@ -8,7 +8,7 @@
 
 class Scene {
   public:
-    Scene() {};
+    Scene() { this->error = false;};
     ~Scene(){};
     float eye[3];
     float viewdir[3];
@@ -20,6 +20,7 @@ class Scene {
     int   pixwidth;
     float bkgcolor[3];
     std::vector<Sphere*> object;
+    bool error;
 
     void createScene(char*);
     void findPixWidth();

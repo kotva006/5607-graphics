@@ -1,6 +1,11 @@
 #include <cstdlib>
 #include <cmath>
 
+/*
+ * This file defines the functions for the float vectors
+ * In here are the cross-product, normalization, add, sub, mul, and div
+ */
+
 namespace vec {
 
   float* add(float *v1, float *v2) {

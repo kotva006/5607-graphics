@@ -22,5 +22,5 @@ window.o: window.cpp window.h
 	$(CC) $(CFLAGS) window.cpp
 
 clean:
-	rm -f *.o ray sample.ppm
+	rm -f *.o ray
 
