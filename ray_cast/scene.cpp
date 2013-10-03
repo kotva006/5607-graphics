@@ -7,6 +7,15 @@
 
 using namespace std;
 
+void setmc(string line, float *array) {
+  istringstream iss(line);
+  int i = 0;
+  iss >> line;
+  for (i = 0; i < 10; i++) {
+    iss >> array[i];
+  }
+}
+
 void Scene::createScene(char *name) {
 
   ifstream inFile;
@@ -19,9 +28,8 @@ void Scene::createScene(char *name) {
   string line = ""; 
   string value = "";
   
-  float mc1 = 0.0;
-  float mc2 = 0.0;
-  float mc3 = 0.0;
+  //storage for the material colors 
+  float mc[10];
   
   // Gets each line of the input file, and then adds the data to the scene
   
@@ -55,11 +63,13 @@ void Scene::createScene(char *name) {
 				iss >> this->bkgcolor[0];
         iss >> this->bkgcolor[1];
         iss >> this->bkgcolor[2];
+    } else if (value.compare("light") == 0) {
+        Light *light = new Light(iss);
+        this->lights.push_back(light); 
     } else if (value.compare("materialcolor") == 0) {
         // store color attributes
-        iss >> mc1;
-        iss >> mc2;
-        iss >> mc3;
+        setmc(line,mc);
+        int i = 0;
         // First gets the color of the object,
         // then gets the type of shape
         // Creates spheres for every sphere in the file
@@ -72,21 +82,23 @@ void Scene::createScene(char *name) {
             if (value.compare("sphere") == 0) {
               // Creates a sphere with the input color extracted
               // Then sets the position and the radius of the sphere
-              Sphere *sphere = new Sphere(mc1,mc2,mc3);
+              Sphere *sphere = new Sphere();
               sss >> sphere->position[0];
               sss >> sphere->position[1];
               sss >> sphere->position[2];
               sss >> sphere->radius;
+              for (i=0; i < 10; i++) {
+                sphere->mc[i] = mc[i];
+              }
               this->object.push_back(sphere);
             } else if (value.compare("materialcolor") == 0) {
-              sss >> mc1;
-              sss >> mc2;
-              sss >> mc3;
+              setmc(line,mc);
             }
             value = "";
         }
     } else {
         cout << "Invalid option " + value + "\n";
+        value = "";
     }
   }
   inFile.close();

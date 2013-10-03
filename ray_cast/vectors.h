@@ -9,6 +9,7 @@ namespace vec {
   float* div(float*, float);
 
   float* crossproduct(float*, float*);
+  float dot(float*,float*);
 
   float* normalize(float*);
 

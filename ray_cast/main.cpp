@@ -18,6 +18,8 @@ void print_usage() {
   cout <<  "This input needs to be a file.\n";
 }
 
+float *shadeRay(Scene*, int);
+
 int main (int argc, char *argv[]) {
 
 
@@ -51,8 +53,9 @@ int main (int argc, char *argv[]) {
   float *winpos, *raydir;
   string data = "";
   float mc = 255; // Max color value
+  //float lowest = -2147483648;
 
-  //cout << "Starting loop...\n";
+  cout << "Starting loop...\n";
 
   /*
    * This loop does the main work of processing each of the rays.
@@ -72,14 +75,17 @@ int main (int argc, char *argv[]) {
       sprintf(color, "%d %d %d ", (int)(scene->bkgcolor[0] * mc),
                                   (int)(scene->bkgcolor[1] * mc),
                                   (int)(scene->bkgcolor[2] * mc));
+      float lowest = -1000;
       for (k=0; k<scene->object.size(); k++) {
         float d = (float)pow((double)scene->object[k]->B(scene->eye,raydir),2)-
                   (4*scene->object[k]->C(scene->eye,raydir));
 
-        if(d >= 0) {
-          sprintf(color, "%d %d %d ", (int)(scene->object[k]->materialcolor[0] * mc),
-                                      (int)(scene->object[k]->materialcolor[1] * mc),
-                                      (int)(scene->object[k]->materialcolor[2] * mc));
+        if(d >= 0 && scene->object[k]->position[2] > lowest) {
+          lowest = scene->object[k]->position[2];
+          float *shade = shadeRay(scene, k);
+          sprintf(color, "%d %d %d ", (int) (shade[0] * mc),
+                                      (int) (shade[1] * mc),
+                                      (int) (shade[2] * mc));
         }
       }
       // This assures we don't go over the 70 char per line limit of ppm
@@ -107,3 +113,43 @@ int main (int argc, char *argv[]) {
   return 0;
 
 }
+
+float * shadeRay(Scene *s, int k) {
+
+  //Getting the values from the material for readbility
+  float odr = s->object[k]->mc[0];
+  float odg = s->object[k]->mc[1];
+  float odb = s->object[k]->mc[2];
+  float osr = s->object[k]->mc[0];
+  float osg = s->object[k]->mc[1];
+  float osb = s->object[k]->mc[2];
+  float ka  = s->object[k]->mc[6];
+  float kd  = s->object[k]->mc[7];
+  float ks  = s->object[k]->mc[8];
+  float n   = s->object[k]->mc[9];
+
+  float N[] = {0.0, 0.0, 1.0};
+  float L[] = {0.0, 1.0, 0.0};
+  float *H  = vec::normalize(vec::add(N,L));
+
+  float NoL = vec::dot(N,L);
+  float NoH = vec::dot(N,H);
+
+
+  float *ret = (float *) malloc(sizeof(float) * 3);
+
+  ret[0] = ka*odr + 1.0 * (kd * odr * (NoL) + ks*osr*pow(NoH,n));
+  ret[1] = ka*odg + 1.0 * (kd * odg * (NoL) + ks*osg*pow(NoH,n));
+  ret[2] = ka*odb + 1.0 * (kd * odb * (NoL) + ks*osb*pow(NoH,n));
+
+  if (ret[0] > 1.0) {ret[0] = 1.0;}
+  if (ret[1] > 1.0) {ret[1] = 1.0;}
+  if (ret[2] > 1.0) {ret[2] = 1.0;}
+  if (ret[0] < 0.0) {ret[0] = 0.0;}
+  if (ret[1] < 0.0) {ret[1] = 0.0;}
+  if (ret[2] < 0.0) {ret[2] = 0.0;}
+
+  return ret;
+
+}
+  

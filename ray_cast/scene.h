@@ -20,6 +20,7 @@ class Scene {
     int   pixwidth;
     float bkgcolor[3];
     std::vector<Sphere*> object;
+    std::vector<Light *> lights;
     bool error;
 
     void createScene(char*);
