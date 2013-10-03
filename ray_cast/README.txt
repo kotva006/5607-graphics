@@ -15,3 +15,9 @@ The files I supplied are sample.in and sample.2.in
 sample.2.in was the file that I created, and sample.in was the one supplied.
 The output files of the 2 test files are found in sample.in.ppm and 
 sample.2.in.ppm
+
+Part B:
+
+The write up is in a file called write_up.txt
+The test files for this iteration are test* where * is any number
+The pictures these files generated are test*.ppm

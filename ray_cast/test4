@@ -8,5 +8,7 @@ pixheight  200
 
 bkgcolor 0.0 0.0 0.0
 
-materialcolor 1.0 0.0 0.0
+light 0.0 100.0 -10.0 0.0 1.0 1.0 1.0
+
+materialcolor 1.0 0.0 0.0 1.0 1.0 1.0 0.2 0.2 0.2 10.0
 sphere  0.0 0.0 -10.0 5.0

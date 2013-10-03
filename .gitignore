@@ -1,3 +1,6 @@
 testing/
+ray
+*.o
+*.swp
 *.ppm
 *.zip

@@ -18,7 +18,7 @@ void print_usage() {
   cout <<  "This input needs to be a file.\n";
 }
 
-float *shadeRay(Scene*, int);
+float *shadeRay(Scene*, int, float*);
 
 int main (int argc, char *argv[]) {
 
@@ -50,9 +50,10 @@ int main (int argc, char *argv[]) {
   int i,j;
   unsigned int k;
   int counter = 0;
-  float *winpos, *raydir;
+  float *winpos, *raydir, *shade, *r;
   string data = "";
   float mc = 255; // Max color value
+  float t,t1,t2 = 0;
   //float lowest = -2147483648;
 
   cout << "Starting loop...\n";
@@ -82,7 +83,12 @@ int main (int argc, char *argv[]) {
 
         if(d >= 0 && scene->object[k]->position[2] > lowest) {
           lowest = scene->object[k]->position[2];
-          float *shade = shadeRay(scene, k);
+          t1 = (-1 * scene->object[k]->B(scene->eye,raydir)-sqrt(d)) / 2;
+          t2 = (-1 * scene->object[k]->B(scene->eye,raydir)+sqrt(d)) / 2;
+          t = ((t1 < t2) ?  t1 : t2);
+          r = vec::add(scene->eye,vec::mul(t,raydir));//intersection point
+          
+          shade = shadeRay(scene, k, r);
           sprintf(color, "%d %d %d ", (int) (shade[0] * mc),
                                       (int) (shade[1] * mc),
                                       (int) (shade[2] * mc));
@@ -101,6 +107,7 @@ int main (int argc, char *argv[]) {
 
     }
   }
+  printf("Loop finishes");
   //creates the output file of the scene
   ofstream outFile;
   char fileName[100] = "\0";
@@ -114,7 +121,7 @@ int main (int argc, char *argv[]) {
 
 }
 
-float * shadeRay(Scene *s, int k) {
+float * shadeRay(Scene *s, int k, float *r) {
 
   //Getting the values from the material for readbility
   float odr = s->object[k]->mc[0];
@@ -128,19 +135,42 @@ float * shadeRay(Scene *s, int k) {
   float ks  = s->object[k]->mc[8];
   float n   = s->object[k]->mc[9];
 
-  float N[] = {0.0, 0.0, 1.0};
-  float L[] = {0.0, 1.0, 0.0};
-  float *H  = vec::normalize(vec::add(N,L));
 
-  float NoL = vec::dot(N,L);
-  float NoH = vec::dot(N,H);
+  //printf("R: %f %f %f \n", r[0], r[1], r[2]);
+
+  float *V = vec::mul(-1,s->viewdir);
+  float *N = vec::div(vec::sub(r,s->object[k]->position),s->object[k]->radius);
+  //printf("N: %f %f %f \n", N[0], N[1], N[2]);
+
+  //printf("Passed dot %f %f \n", NoL, NoH);
+  //printf("Passed Values %f %f %f %f %f %f %f %f %f %f\n", odr, odg, odb,
+   //                     osr, osg, osb, ka, kd, ks, n);
 
 
   float *ret = (float *) malloc(sizeof(float) * 3);
+  unsigned int m;
+  float temp_r1, temp_r2, temp_r3 = 0;
+  for (m = 0; m < s->lights.size(); m++) {
+    
+    float lr  = s->lights[0]->color[0];
+    float lg  = s->lights[0]->color[1];
+    float lb  = s->lights[0]->color[2];
+    float *L = vec::normalize(s->lights[k]->position);
+    float *H = vec::normalize(vec::add(L,V));
+    float NoL = vec::dot(N,L);
+    float NoH = vec::dot(N,H);
 
-  ret[0] = ka*odr + 1.0 * (kd * odr * (NoL) + ks*osr*pow(NoH,n));
-  ret[1] = ka*odg + 1.0 * (kd * odg * (NoL) + ks*osg*pow(NoH,n));
-  ret[2] = ka*odb + 1.0 * (kd * odb * (NoL) + ks*osb*pow(NoH,n));
+    temp_r1 += lr * ((kd*odr*NoL) + (ks*osr*pow(NoH,n)));
+    temp_r2 += lg * ((kd*odg*NoL) + (ks*osg*pow(NoH,n)));
+    temp_r3 += lb * ((kd*odb*NoL) + (ks*osb*pow(NoH,n)));
+
+  }
+
+  ret[0] = ka*odr + temp_r1;
+  ret[1] = ka*odg + temp_r2;
+  ret[2] = ka*odb + temp_r3;
+
+  printf("Set return: %f %f %f\n", ret[0], ret[1], ret[2]);
 
   if (ret[0] > 1.0) {ret[0] = 1.0;}
   if (ret[1] > 1.0) {ret[1] = 1.0;}

@@ -1,0 +1,40 @@
+
+
+I started with a very basic file with just one sphere in the center.
+This file is called test and it created the image test.ppm
+The light is in a more forward position.  I tried to give the settings a very
+basic setting and the result is a red sphere partially visible
+
+Then I increased the k values of the materials to make the sphere more
+visible.  This is the file test2 and produces test2.ppm
+Increasing the ka and kd values drastically made the sphere a more similar color.
+This is expected becuse ka defines how the sphere is illuminated the indirect light.
+A higher number making this stronger.  Also incresing kd also drascially increased the
+amount of fallout present in the picture.
+
+The next test was test there and this is when I changed the specular color of the
+sphere to white and kept the ka value high.  This had a similar effect to test2
+as expected because the ka was kept high, though there is more less fallout and
+there is a noticable shadow on the base for the kd dropped.
+
+This next test (test4) changed the n value (from 100 to 10). This drascially
+caused the amount of the visible sphere to be reduced.
+This is expected because a smaller n value means it has a smaller spot
+where direct light is reflected.
+
+The next test (test5) introduces more spheres into the scene so we can see how the 
+view affects what we see. This scene also introduces 2 light sources.  It is seen by
+how different spheres react to the light accordingly.
+
+Test 6 changes the fov from 90 to 60.  This essentially acted as a zoom for the
+angle we could see was smaller so this smaller window filled up an image
+of the same size.
+
+The next test (test7) changes the up dir from 0.0 1.0 0.0 to 0.8944 0.4472 0.0
+This essentially changed the orientation of the image and rotated the picture.
+
+The next test (test8) changes the eye. This moved the image, and distorted
+the objects around the edges as they leave the feild of view.
+
+The final test (test9) adds sphere layering to prove that it can handle spheres
+being placed on top of one another.
