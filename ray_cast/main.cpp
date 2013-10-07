@@ -127,9 +127,9 @@ float * shadeRay(Scene *s, int k, float *r) {
   float odr = s->object[k]->mc[0];
   float odg = s->object[k]->mc[1];
   float odb = s->object[k]->mc[2];
-  float osr = s->object[k]->mc[0];
-  float osg = s->object[k]->mc[1];
-  float osb = s->object[k]->mc[2];
+  float osr = s->object[k]->mc[3];
+  float osg = s->object[k]->mc[4];
+  float osb = s->object[k]->mc[5];
   float ka  = s->object[k]->mc[6];
   float kd  = s->object[k]->mc[7];
   float ks  = s->object[k]->mc[8];
@@ -148,22 +148,45 @@ float * shadeRay(Scene *s, int k, float *r) {
 
 
   float *ret = (float *) malloc(sizeof(float) * 3);
-  unsigned int m;
-  float temp_r1, temp_r2, temp_r3 = 0;
+  unsigned int m,w;
+  float temp_r1, temp_r2, temp_r3, d, t, t1, t2 = 0;
   for (m = 0; m < s->lights.size(); m++) {
     
     float lr  = s->lights[0]->color[0];
     float lg  = s->lights[0]->color[1];
     float lb  = s->lights[0]->color[2];
-    float *L = vec::normalize(s->lights[k]->position);
-    float *H = vec::normalize(vec::add(L,V));
-    float NoL = vec::dot(N,L);
-    float NoH = vec::dot(N,H);
 
-    temp_r1 += lr * ((kd*odr*NoL) + (ks*osr*pow(NoH,n)));
-    temp_r2 += lg * ((kd*odg*NoL) + (ks*osg*pow(NoH,n)));
-    temp_r3 += lb * ((kd*odb*NoL) + (ks*osb*pow(NoH,n)));
+    float *L; // TO DO figure out what w does... 0 = dir 1 = point
+    if (s->lights[k]->w == 0) {
+      L = vec::normalize(vec::mul(-1, s->lights[k]->position));
+    } else {
+      L =  vec::normalize(vec::sub(s->lights[k]->position, r));
+    }
 
+    float *H  = vec::normalize(vec::add(L,V));
+    float NoL = fmax(0.0,vec::dot(N,L));
+    float NoH = fmax(0.0,vec::dot(N,H));
+    float mod = 1.0;
+
+    //Checking if a light ray hits another object on way back to source
+    for (w = 0; w < s->object.size(); w++) {
+
+      d = (float)pow((double)s->object[w]->B(r,s->lights[m]->position),2)-
+                (4*s->object[w]->C(r,s->lights[m]->position));
+      
+      if (d >= 0) {
+        t1 = (-1 * s->object[w]->B(r,s->lights[m]->position)-sqrt(d)) / 2;
+        t2 = (-1 * s->object[w]->B(r,s->lights[m]->position)+sqrt(d)) / 2;
+        t = ((t1 < t2) ?  t1 : t2);
+       
+        mod =  ((t > 0.1) ? 0 : 1.0);
+        break;
+      }
+    }
+    temp_r1 += mod * lr * ((kd*odr*NoL) + (ks*osr*pow(NoH,n)));
+    temp_r2 += mod * lg * ((kd*odg*NoL) + (ks*osg*pow(NoH,n)));
+    temp_r3 += mod * lb * ((kd*odb*NoL) + (ks*osb*pow(NoH,n)));
+    
   }
 
   ret[0] = ka*odr + temp_r1;
