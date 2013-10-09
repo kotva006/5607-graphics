@@ -43,7 +43,8 @@ class Sphere: public Objects{
                              d[1] * (o[1] - this->position[1]) +
                              d[2] * (o[2] - this->position[2])));
     };
-    float C(float *o, float *d) {
+    //Takes in the origin of the ray
+    float C(float *o) {
       return (float) 
              pow((double) (o[0] - this->position[0]), 2.0) +
              pow((double) (o[1] - this->position[1]), 2.0) +

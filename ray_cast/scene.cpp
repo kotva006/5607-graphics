@@ -96,10 +96,13 @@ void Scene::createScene(char *name) {
             }
             value = "";
         }
+    } else if (value.compare("") == 0) {
+        //Blank line do nothing
     } else {
-        cout << "Invalid option " + value + "\n";
+        cout << "Invalid option " + value + ".\n";
         value = "";
     }
+    value = "";
   }
   inFile.close();
 }

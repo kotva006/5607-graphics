@@ -31,8 +31,6 @@ int main (int argc, char *argv[]) {
     exit(0);
   }
 
-
-  //cout << "Creating Scene...\n";
   Scene *scene = new Scene();
   scene->createScene(argv[1]);
 
@@ -41,10 +39,8 @@ int main (int argc, char *argv[]) {
     exit(1);
   }
 
-  //cout << "Defining window...\n"; 
   Window *w = new Window(scene);
 
-  //cout << "Initializing picture...\n";
   Picture *picture = new Picture(scene);
 
   int i,j;
@@ -54,7 +50,6 @@ int main (int argc, char *argv[]) {
   string data = "";
   float mc = 255; // Max color value
   float t,t1,t2 = 0;
-  //float lowest = -2147483648;
 
   cout << "Starting loop...\n";
 
@@ -68,27 +63,31 @@ int main (int argc, char *argv[]) {
    */
   for ( i=0; i<scene->pixheight; i++) {
     for ( j=0; j<scene->pixwidth; j++) {
+
       winpos = vec::add(w->ul, vec::add(
                vec::mul(j,w->deltah), vec::mul(i,w->deltav)));
       raydir = vec::normalize(vec::sub(winpos,scene->eye)); 
        
-      char color[13];
+      char color[13]; //Set the color to the default background
       sprintf(color, "%d %d %d ", (int)(scene->bkgcolor[0] * mc),
                                   (int)(scene->bkgcolor[1] * mc),
                                   (int)(scene->bkgcolor[2] * mc));
+
       float lowest = -1000;
       for (k=0; k<scene->object.size(); k++) {
+
         float d = (float)pow((double)scene->object[k]->B(scene->eye,raydir),2)-
-                  (4*scene->object[k]->C(scene->eye,raydir));
+                  (4*scene->object[k]->C(scene->eye));
 
         if(d >= 0 && scene->object[k]->position[2] > lowest) {
+
           lowest = scene->object[k]->position[2];
           t1 = (-1 * scene->object[k]->B(scene->eye,raydir)-sqrt(d)) / 2;
           t2 = (-1 * scene->object[k]->B(scene->eye,raydir)+sqrt(d)) / 2;
           t = ((t1 < t2) ?  t1 : t2);
           r = vec::add(scene->eye,vec::mul(t,raydir));//intersection point
           
-          shade = shadeRay(scene, k, r);
+          shade = shadeRay(scene, k, r); //Shade ray and change color
           sprintf(color, "%d %d %d ", (int) (shade[0] * mc),
                                       (int) (shade[1] * mc),
                                       (int) (shade[2] * mc));
@@ -107,7 +106,7 @@ int main (int argc, char *argv[]) {
 
     }
   }
-  printf("Loop finishes");
+  printf("Loop Finished\n");
   //creates the output file of the scene
   ofstream outFile;
   char fileName[100] = "\0";
@@ -138,41 +137,44 @@ float * shadeRay(Scene *s, int k, float *r) {
 
   //printf("R: %f %f %f \n", r[0], r[1], r[2]);
 
-  float *V = vec::mul(-1,s->viewdir);
+  float *V = vec::normalize(vec::mul(-1,s->viewdir));
   float *N = vec::div(vec::sub(r,s->object[k]->position),s->object[k]->radius);
   //printf("N: %f %f %f \n", N[0], N[1], N[2]);
 
-  //printf("Passed dot %f %f \n", NoL, NoH);
   //printf("Passed Values %f %f %f %f %f %f %f %f %f %f\n", odr, odg, odb,
-   //                     osr, osg, osb, ka, kd, ks, n);
+  //                     osr, osg, osb, ka, kd, ks, n);
 
 
   float *ret = (float *) malloc(sizeof(float) * 3);
   unsigned int m,w;
   float temp_r1, temp_r2, temp_r3, d, t, t1, t2 = 0;
+
+  //The loop that sums all the light sources
   for (m = 0; m < s->lights.size(); m++) {
-    
-    float lr  = s->lights[0]->color[0];
-    float lg  = s->lights[0]->color[1];
-    float lb  = s->lights[0]->color[2];
+
+    float lr  = s->lights[m]->color[0];
+    float lg  = s->lights[m]->color[1];
+    float lb  = s->lights[m]->color[2];
 
     float *L; // TO DO figure out what w does... 0 = dir 1 = point
-    if (s->lights[k]->w == 0) {
-      L = vec::normalize(vec::mul(-1, s->lights[k]->position));
+    if (s->lights[m]->w == 0) {
+      L = vec::normalize(vec::mul(-1, s->lights[m]->position));
     } else {
-      L =  vec::normalize(vec::sub(s->lights[k]->position, r));
+      L =  vec::normalize(vec::sub(s->lights[m]->position, r));
     }
 
     float *H  = vec::normalize(vec::add(L,V));
     float NoL = fmax(0.0,vec::dot(N,L));
     float NoH = fmax(0.0,vec::dot(N,H));
     float mod = 1.0;
+    //printf("H: %f %f %f NoL %f Noh %f\n", H[0], H[1], H[2], NoL, NoH);
+    //printf("L: %f %f %f", L[0], L[1], L[2]);
 
     //Checking if a light ray hits another object on way back to source
     for (w = 0; w < s->object.size(); w++) {
 
       d = (float)pow((double)s->object[w]->B(r,s->lights[m]->position),2)-
-                (4*s->object[w]->C(r,s->lights[m]->position));
+                (4*s->object[w]->C(r));
       
       if (d >= 0) {
         t1 = (-1 * s->object[w]->B(r,s->lights[m]->position)-sqrt(d)) / 2;
@@ -193,7 +195,7 @@ float * shadeRay(Scene *s, int k, float *r) {
   ret[1] = ka*odg + temp_r2;
   ret[2] = ka*odb + temp_r3;
 
-  printf("Set return: %f %f %f\n", ret[0], ret[1], ret[2]);
+  //printf("Set return: %f %f %f\n", ret[0], ret[1], ret[2]);
 
   if (ret[0] > 1.0) {ret[0] = 1.0;}
   if (ret[1] > 1.0) {ret[1] = 1.0;}
