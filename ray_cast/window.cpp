@@ -15,7 +15,7 @@ using namespace vec;
  */
 
 Window::Window(Scene *s) {
-
+  
   float *u = normalize(crossproduct(s->viewdir, s->updir));
   float *v = normalize(crossproduct(u, s->viewdir));
   float *n = normalize(s->viewdir);

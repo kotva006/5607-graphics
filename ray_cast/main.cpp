@@ -171,18 +171,20 @@ float * shadeRay(Scene *s, int k, float *r) {
     //printf("L: %f %f %f", L[0], L[1], L[2]);
 
     //Checking if a light ray hits another object on way back to source
+
+    // READ THE DOCUMENTATION TO DEBUG BIOTCH
     for (w = 0; w < s->object.size(); w++) {
 
-      d = (float)pow((double)s->object[w]->B(r,s->lights[m]->position),2)-
+      d = (float)pow((double)s->object[w]->B(r,vec::normalize(s->lights[m]->position)),2)-
                 (4*s->object[w]->C(r));
       
       if (d >= 0) {
-        t1 = (-1 * s->object[w]->B(r,s->lights[m]->position)-sqrt(d)) / 2;
-        t2 = (-1 * s->object[w]->B(r,s->lights[m]->position)+sqrt(d)) / 2;
+        t1 = (-1 * s->object[w]->B(r,vec::normalize(s->lights[m]->position))-sqrt(d)) / 2;
+        t2 = (-1 * s->object[w]->B(r,vec::normalize(s->lights[m]->position))+sqrt(d)) / 2;
         t = ((t1 < t2) ?  t1 : t2);
        
         mod =  ((t > 0.1) ? 0 : 1.0);
-        break;
+        w = s->object.size(); //break;
       }
     }
     temp_r1 += mod * lr * ((kd*odr*NoL) + (ks*osr*pow(NoH,n)));
@@ -197,9 +199,9 @@ float * shadeRay(Scene *s, int k, float *r) {
 
   //printf("Set return: %f %f %f\n", ret[0], ret[1], ret[2]);
 
-  if (ret[0] > 1.0) {ret[0] = 1.0;}
-  if (ret[1] > 1.0) {ret[1] = 1.0;}
-  if (ret[2] > 1.0) {ret[2] = 1.0;}
+  if (ret[0] > 1.0) {ret[0] = 1;}
+  if (ret[1] > 1.0) {ret[1] = 1;}
+  if (ret[2] > 1.0) {ret[2] = 1;}
   if (ret[0] < 0.0) {ret[0] = 0.0;}
   if (ret[1] < 0.0) {ret[1] = 0.0;}
   if (ret[2] < 0.0) {ret[2] = 0.0;}

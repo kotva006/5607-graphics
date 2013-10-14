@@ -4,6 +4,7 @@
 #include <iostream>
 
 #include "scene.h"
+#include "vectors.h"
 
 using namespace std;
 
@@ -105,6 +106,11 @@ void Scene::createScene(char *name) {
     value = "";
   }
   inFile.close();
+
+  float *ret = vec::normalize(this->viewdir);
+  this->viewdir[0] = ret[0];
+  this->viewdir[1] = ret[1];
+  this->viewdir[2] = ret[2];
 }
 
 void Scene::findPixWidth() {
