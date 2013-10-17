@@ -1,6 +1,13 @@
 Ryan Kotval
 4332696
 
+Part C:
+
+The first file (test5) shows off how specular reflection
+The remaining files attempt to show off how refractio works
+
+
+################################################################
 Ray Tracer
 
 Inoder to work the ray tracer the following needs to be done:
