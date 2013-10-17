@@ -141,9 +141,9 @@ float *specShadeRay(Scene *s, int k, float *o, float *R, int c) {
   return ret;
 }
 
-float *refracRay(Scene* s,int k,float* o, float* R, float iior, int c) {
+float *refracRay(Scene* s,int k, float* o, float* T, float iior, int c) {
   
-  float *hitStruct = willHitWhere(s, R, o);
+  float *hitStruct = willHitWhere(s, T, o);
   if (hitStruct[0] == -100000) {
     return s->bkgcolor;
   }
