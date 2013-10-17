@@ -134,21 +134,22 @@ float * shadeRay(Scene *s, int k, float *r, int c) {
   float ks  = s->object[k]->mc[8];
   float n   = s->object[k]->mc[9];
   float al  = s->object[k]->mc[10];
-  float ior = s->object[k]->mc[11];
+  float nt = s->object[k]->mc[11];
 
 
   //printf("R: %f %f %f \n", r[0], r[1], r[2]);
 
-  float *V;
+  float *V = vec::normalize(vec::mul(-1,s->viewdir));
   float *N = vec::div(vec::sub(r,s->object[k]->position),s->object[k]->radius);
-  float Fnot = ks;
+  float ni = 1.0;
+  float Frn  = pow((nt-ni)/(nt+ni),2);
   float *I = vec::negate(s->viewdir);
-  float Fr = Fnot + (1 - Fnot) * pow((1 - vec::dot(I,N)),5);
+  float Fr = Frn + (1 - Frn) * pow((1 - vec::dot(I,N)),5);
 
-  V = vec::normalize(vec::mul(-1,s->viewdir));
 
   float *ret = (float *) malloc(sizeof(float) * 3);
-  float *spec = (float *) malloc(sizeof(float) * 3);
+  float *spec = (float *) malloc(sizeof(float) * 3); 
+  float *refrac = (float *) malloc(sizeof(float) * 3); 
   unsigned int m,w;
   float temp_r1, temp_r2, temp_r3, d, t, t1, t2 = 0;
 
@@ -195,11 +196,22 @@ float * shadeRay(Scene *s, int k, float *r, int c) {
     
   }
   float *R = vec::sub(vec::mul(2 * vec::dot(N,I),N),I);
+  float *T = vec::add(vec::mul(sqrt(1-(pow(ni/nt,2)*(1-pow(vec::dot(N,I),2)))),
+                               vec::negate(N)), vec::mul((ni/nt),(vec::sub(vec::mul(
+                                                         vec::dot(N,I),N),I))));
   spec = specShadeRay(s,k,r,R,1); 
 
-  ret[0] = ka*odr + temp_r1 + Fr * spec[0];
-  ret[1] = ka*odg + temp_r2 + Fr * spec[1];
-  ret[2] = ka*odb + temp_r3 + Fr * spec[2];
+  if (nt != 1) {
+    refrac = refracRay(s,k,r,T,ni,1);
+  } else {
+    refrac[0] = 0;
+    refrac[1] = 0;
+    refrac[2] = 0;
+  }
+
+  ret[0] = ka*odr + temp_r1 + Fr * spec[0] + (1-Fr) * (1 - al) * refrac[0];
+  ret[1] = ka*odg + temp_r2 + Fr * spec[1] + (1-Fr) * (1 - al) * refrac[1];
+  ret[2] = ka*odb + temp_r3 + Fr * spec[2] + (1-Fr) * (1 - al) * refrac[2];
 
   //printf("Set return: %f %f %f\n", ret[0], ret[1], ret[2]);
 

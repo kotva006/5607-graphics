@@ -4,6 +4,6 @@
 #include "scene.h"
 
 float *specShadeRay(Scene*,int,float*,float*,int);
-float *reflecShadeRay(Scene*,int,float*,int);
+float *refracRay(Scene*,int,float*,float*,float,int);
 
 #endif
