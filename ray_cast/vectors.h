@@ -8,6 +8,8 @@ namespace vec {
   float* mul(float, float*);
   float* div(float*, float);
 
+  float* negate(float*);
+
   float* crossproduct(float*, float*);
   float dot(float*,float*);
 

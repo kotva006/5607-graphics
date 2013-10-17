@@ -12,7 +12,7 @@ void setmc(string line, float *array) {
   istringstream iss(line);
   int i = 0;
   iss >> line;
-  for (i = 0; i < 10; i++) {
+  for (i = 0; i < 12; i++) {
     iss >> array[i];
   }
 }
@@ -30,7 +30,7 @@ void Scene::createScene(char *name) {
   string value = "";
   
   //storage for the material colors 
-  float mc[10];
+  float mc[12];
   
   // Gets each line of the input file, and then adds the data to the scene
   
@@ -88,7 +88,7 @@ void Scene::createScene(char *name) {
               sss >> sphere->position[1];
               sss >> sphere->position[2];
               sss >> sphere->radius;
-              for (i=0; i < 10; i++) {
+              for (i=0; i < 12; i++) {
                 sphere->mc[i] = mc[i];
               }
               this->object.push_back(sphere);

@@ -9,7 +9,7 @@ class Objects {
     Objects(){};
     ~Objects(){};
     float position[3];
-    float mc[10];
+    float mc[12];
 };
 
 class Light: public Objects{

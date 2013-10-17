@@ -48,6 +48,16 @@ namespace vec {
 
   }
 
+  float* negate(float *v) {
+
+    float *r = (float*) malloc(sizeof(float) * 3);
+    r[0] = -v[0];
+    r[1] = -v[1];
+    r[2] = -v[2];
+    return r;
+
+  }
+
   float* crossproduct(float* v1,float* v2) {
     float *rvec = (float*) malloc(sizeof(float) * 3);
     rvec[0] = (v1[1] * v2[2]) - (v1[2] * v2[1]);

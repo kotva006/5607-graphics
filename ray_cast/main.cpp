@@ -1,4 +1,3 @@
-
 #include <iostream>
 #include <fstream>
 #include <cstdlib>
@@ -10,6 +9,7 @@
 #include "picture.h"
 #include "vectors.h"
 #include "window.h"
+#include "specreflec.h"
 
 using namespace std;
 
@@ -18,7 +18,7 @@ void print_usage() {
   cout <<  "This input needs to be a file.\n";
 }
 
-float *shadeRay(Scene*, int, float*);
+float *shadeRay(Scene*, int, float*,int);
 
 int main (int argc, char *argv[]) {
 
@@ -87,7 +87,7 @@ int main (int argc, char *argv[]) {
           t = ((t1 < t2) ?  t1 : t2);
           r = vec::add(scene->eye,vec::mul(t,raydir));//intersection point
           
-          shade = shadeRay(scene, k, r); //Shade ray and change color
+          shade = shadeRay(scene, k, r, 0); //Shade ray and change color
           sprintf(color, "%d %d %d ", (int) (shade[0] * mc),
                                       (int) (shade[1] * mc),
                                       (int) (shade[2] * mc));
@@ -120,7 +120,7 @@ int main (int argc, char *argv[]) {
 
 }
 
-float * shadeRay(Scene *s, int k, float *r) {
+float * shadeRay(Scene *s, int k, float *r, int c) {
 
   //Getting the values from the material for readbility
   float odr = s->object[k]->mc[0];
@@ -133,19 +133,22 @@ float * shadeRay(Scene *s, int k, float *r) {
   float kd  = s->object[k]->mc[7];
   float ks  = s->object[k]->mc[8];
   float n   = s->object[k]->mc[9];
+  float al  = s->object[k]->mc[10];
+  float ior = s->object[k]->mc[11];
 
 
   //printf("R: %f %f %f \n", r[0], r[1], r[2]);
 
-  float *V = vec::normalize(vec::mul(-1,s->viewdir));
+  float *V;
   float *N = vec::div(vec::sub(r,s->object[k]->position),s->object[k]->radius);
-  //printf("N: %f %f %f \n", N[0], N[1], N[2]);
+  float Fnot = ks;
+  float *I = vec::negate(s->viewdir);
+  float Fr = Fnot + (1 - Fnot) * pow((1 - vec::dot(I,N)),5);
 
-  //printf("Passed Values %f %f %f %f %f %f %f %f %f %f\n", odr, odg, odb,
-  //                     osr, osg, osb, ka, kd, ks, n);
-
+  V = vec::normalize(vec::mul(-1,s->viewdir));
 
   float *ret = (float *) malloc(sizeof(float) * 3);
+  float *spec = (float *) malloc(sizeof(float) * 3);
   unsigned int m,w;
   float temp_r1, temp_r2, temp_r3, d, t, t1, t2 = 0;
 
@@ -156,7 +159,7 @@ float * shadeRay(Scene *s, int k, float *r) {
     float lg  = s->lights[m]->color[1];
     float lb  = s->lights[m]->color[2];
 
-    float *L; // TO DO figure out what w does... 0 = dir 1 = point
+    float *L;
     if (s->lights[m]->w == 0) {
       L = vec::normalize(vec::mul(-1, s->lights[m]->position));
     } else {
@@ -172,7 +175,6 @@ float * shadeRay(Scene *s, int k, float *r) {
 
     //Checking if a light ray hits another object on way back to source
 
-    // READ THE DOCUMENTATION TO DEBUG BIOTCH
     for (w = 0; w < s->object.size(); w++) {
 
       d = (float)pow((double)s->object[w]->B(r,vec::normalize(s->lights[m]->position)),2)-
@@ -192,10 +194,12 @@ float * shadeRay(Scene *s, int k, float *r) {
     temp_r3 += mod * lb * ((kd*odb*NoL) + (ks*osb*pow(NoH,n)));
     
   }
+  float *R = vec::sub(vec::mul(2 * vec::dot(N,I),N),I);
+  spec = specShadeRay(s,k,r,R,1); 
 
-  ret[0] = ka*odr + temp_r1;
-  ret[1] = ka*odg + temp_r2;
-  ret[2] = ka*odb + temp_r3;
+  ret[0] = ka*odr + temp_r1 + Fr * spec[0];
+  ret[1] = ka*odg + temp_r2 + Fr * spec[1];
+  ret[2] = ka*odb + temp_r3 + Fr * spec[2];
 
   //printf("Set return: %f %f %f\n", ret[0], ret[1], ret[2]);
 
@@ -209,4 +213,3 @@ float * shadeRay(Scene *s, int k, float *r) {
   return ret;
 
 }
-  
