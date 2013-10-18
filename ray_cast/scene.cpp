@@ -14,6 +14,7 @@ void setmc(string line, float *array) {
   iss >> line;
   for (i = 0; i < 12; i++) {
     iss >> array[i];
+    //cout << "Object color: " << array[i] << "\n";
   }
 }
 

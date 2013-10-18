@@ -49,16 +49,16 @@ float *specShadeRay(Scene *s, int k, float *o, float *R, int c) {
 
   int nk = hitStruct[3];
   float *r = hitStruct;
-  float odr = s->object[nk]->mc[0]; 
-  float odg = s->object[nk]->mc[1]; 
-  float odb = s->object[nk]->mc[2]; 
-  float osr = s->object[nk]->mc[3]; 
-  float osg = s->object[nk]->mc[4]; 
-  float osb = s->object[nk]->mc[5]; 
-  float ka  = s->object[nk]->mc[6]; 
-  float kd  = s->object[nk]->mc[7]; 
-  float ks  = s->object[nk]->mc[8]; 
-  float n   = s->object[nk]->mc[9]; 
+  float odr = s->object[k]->mc[0]; 
+  float odg = s->object[k]->mc[1]; 
+  float odb = s->object[k]->mc[2]; 
+  float osr = s->object[k]->mc[3]; 
+  float osg = s->object[k]->mc[4]; 
+  float osb = s->object[k]->mc[5]; 
+  float ka  = s->object[k]->mc[6]; 
+  float kd  = s->object[k]->mc[7]; 
+  float ks  = s->object[k]->mc[8]; 
+  float n   = s->object[k]->mc[9]; 
   //float al  = s->object[nk]->mc[10];
   //float ni = s->object[nk]->mc[11];
 
@@ -138,6 +138,8 @@ float *specShadeRay(Scene *s, int k, float *o, float *R, int c) {
   if (ret[1] > 1.0) {ret[1] = 1.0;}
   if (ret[2] > 1.0) {ret[2] = 1.0;}
 
+  free(nr);
+
   return ret;
 }
 
@@ -150,18 +152,18 @@ float *refracRay(Scene* s,int k, float* o, float* T, float iior, int c) {
 
   int nk = hitStruct[3];
   float *r = hitStruct;
-  float odr = s->object[nk]->mc[0]; 
-  float odg = s->object[nk]->mc[1]; 
-  float odb = s->object[nk]->mc[2]; 
-  float osr = s->object[nk]->mc[3]; 
-  float osg = s->object[nk]->mc[4]; 
-  float osb = s->object[nk]->mc[5]; 
-  float ka  = s->object[nk]->mc[6]; 
-  float kd  = s->object[nk]->mc[7]; 
-  float ks  = s->object[nk]->mc[8]; 
-  float n   = s->object[nk]->mc[9]; 
-  float al  = s->object[nk]->mc[10];
-  float ior = s->object[nk]->mc[11];
+  float odr = s->object[k]->mc[0]; 
+  float odg = s->object[k]->mc[1]; 
+  float odb = s->object[k]->mc[2]; 
+  float osr = s->object[k]->mc[3]; 
+  float osg = s->object[k]->mc[4]; 
+  float osb = s->object[k]->mc[5]; 
+  float ka  = s->object[k]->mc[6]; 
+  float kd  = s->object[k]->mc[7]; 
+  float ks  = s->object[k]->mc[8]; 
+  float n   = s->object[k]->mc[9]; 
+  float al  = s->object[k]->mc[10];
+  float ior = s->object[k]->mc[11];
 
   float ni,nt = 0;
 
@@ -178,13 +180,12 @@ float *refracRay(Scene* s,int k, float* o, float* T, float iior, int c) {
 
   float *V = vec::normalize(vec::sub(s->eye,r));
   float *N = vec::div(vec::sub(r,s->object[nk]->position),s->object[nk]->radius);
-  float *I = vec::negate(R);
+  float *I = vec::negate(T);
   //float Fr = Fnot + (1 - Fnot) * pow((1 - vec::dot(I,N)), 5);
   float Fr = Frn + (1 - Frn) * pow((1 - vec::dot(I,N)),5);
 
   unsigned int w,m;
   float *ret = (float *) malloc(sizeof(float) * 3);
-  float *spec = (float *) malloc(sizeof(float) * 3);
   float *refrac = (float *) malloc(sizeof(float) * 3);
 
   float *nr   = (float *) malloc(sizeof(float) * 3);
@@ -235,19 +236,14 @@ float *refracRay(Scene* s,int k, float* o, float* T, float iior, int c) {
   }
   
   if ( c > 4) {
-    spec[0] = 0;
-    spec[1] = 0;
-    spec[2] = 0;
     refrac[0] = 0;
     refrac[1] = 0;
     refrac[2] = 0;
   } else {
     c++;
-    float *nR = vec::sub(vec::mul(2 * vec::dot(N,I),N),I);
     float *nT = vec::add(vec::mul(sqrt(1-(pow(ni/nt,2)*(1-pow(vec::dot(N,I),2)))),
                                  vec::negate(N)), vec::mul((ni/nt),(vec::sub(vec::mul(
                                                            vec::dot(N,I),N),I))));
-    spec = specShadeRay(s,nk,nr,nR,c);
     if (ior != 1) {
       refrac = refracRay(s,nk,nr,nT,ni,c);
     } else {
@@ -258,13 +254,15 @@ float *refracRay(Scene* s,int k, float* o, float* T, float iior, int c) {
 
   }
 
-  ret[0] = ka*odr + temp_r1 + Fr * spec[0] + (1-Fr) * (1 - al) * refrac[0];
-  ret[1] = ka*odg + temp_r2 + Fr * spec[1] + (1-Fr) * (1 - al) * refrac[1];
-  ret[2] = ka*odb + temp_r3 + Fr * spec[2] + (1-Fr) * (1 - al) * refrac[2];
+  ret[0] = ka*odr + temp_r1 + (1-Fr) * (1 - al) * refrac[0];
+  ret[1] = ka*odg + temp_r2 + (1-Fr) * (1 - al) * refrac[1];
+  ret[2] = ka*odb + temp_r3 + (1-Fr) * (1 - al) * refrac[2];
 
   if (ret[0] > 1.0) {ret[0] = 1.0;}
   if (ret[1] > 1.0) {ret[1] = 1.0;}
   if (ret[2] > 1.0) {ret[2] = 1.0;}
+
+  free(nr);
 
   return ret;
 }

@@ -134,7 +134,7 @@ float * shadeRay(Scene *s, int k, float *r, int c) {
   float ks  = s->object[k]->mc[8];
   float n   = s->object[k]->mc[9];
   float al  = s->object[k]->mc[10];
-  float nt = s->object[k]->mc[11];
+  float nt  = s->object[k]->mc[11];
 
 
   //printf("R: %f %f %f \n", r[0], r[1], r[2]);
