@@ -37,7 +37,6 @@ float *willHitWhere(Scene *s, float *r_dir, float *o) {
   return ret;
 }          
 
-
 // o is the position that ray hits
 // k is what it hits
 float *specShadeRay(Scene *s, int k, float *o, float *R, int c) {
@@ -48,26 +47,30 @@ float *specShadeRay(Scene *s, int k, float *o, float *R, int c) {
   }
 
   int nk = hitStruct[3];
-  float *r = hitStruct;
-  float odr = s->object[k]->mc[0]; 
-  float odg = s->object[k]->mc[1]; 
-  float odb = s->object[k]->mc[2]; 
-  float osr = s->object[k]->mc[3]; 
-  float osg = s->object[k]->mc[4]; 
-  float osb = s->object[k]->mc[5]; 
-  float ka  = s->object[k]->mc[6]; 
-  float kd  = s->object[k]->mc[7]; 
-  float ks  = s->object[k]->mc[8]; 
-  float n   = s->object[k]->mc[9]; 
+  float *r  = hitStruct;
+  float odr = s->object[nk]->mc[0]; 
+  float odg = s->object[nk]->mc[1]; 
+  float odb = s->object[nk]->mc[2]; 
+  float osr = s->object[nk]->mc[3]; 
+  float osg = s->object[nk]->mc[4]; 
+  float osb = s->object[nk]->mc[5]; 
+  float ka  = s->object[nk]->mc[6]; 
+  float kd  = s->object[nk]->mc[7]; 
+  float ks  = s->object[nk]->mc[8]; 
+  float n   = s->object[nk]->mc[9]; 
   //float al  = s->object[nk]->mc[10];
-  //float ni = s->object[nk]->mc[11];
+  float ior = s->object[nk]->mc[11];
 
-  float Fnot = s->object[k]->mc[8];
+  //float Fnot = s->object[k]->mc[8];
+
+  float nt = ior;
+  float ni = 1.0;
+  float Frn  = pow((nt-ni)/(nt+ni),2);
 
   float *V = vec::normalize(vec::sub(s->eye,r));
   float *N = vec::div(vec::sub(r,s->object[nk]->position),s->object[nk]->radius);
   float *I = vec::negate(R);
-  float Fr = Fnot + (1 - Fnot) * pow((1 - vec::dot(I,N)), 5);
+  float Fr = Frn + (1 - Frn) * pow((1 - vec::dot(I,N)), 5);
 
 
   unsigned int w,m;
@@ -138,7 +141,6 @@ float *specShadeRay(Scene *s, int k, float *o, float *R, int c) {
   if (ret[1] > 1.0) {ret[1] = 1.0;}
   if (ret[2] > 1.0) {ret[2] = 1.0;}
 
-  free(nr);
 
   return ret;
 }
@@ -149,21 +151,22 @@ float *refracRay(Scene* s,int k, float* o, float* T, float iior, int c) {
   if (hitStruct[0] == -100000) {
     return s->bkgcolor;
   }
+  //printf("passwd\n");
 
   int nk = hitStruct[3];
   float *r = hitStruct;
-  float odr = s->object[k]->mc[0]; 
-  float odg = s->object[k]->mc[1]; 
-  float odb = s->object[k]->mc[2]; 
-  float osr = s->object[k]->mc[3]; 
-  float osg = s->object[k]->mc[4]; 
-  float osb = s->object[k]->mc[5]; 
-  float ka  = s->object[k]->mc[6]; 
-  float kd  = s->object[k]->mc[7]; 
-  float ks  = s->object[k]->mc[8]; 
-  float n   = s->object[k]->mc[9]; 
-  float al  = s->object[k]->mc[10];
-  float ior = s->object[k]->mc[11];
+  float odr = s->object[nk]->mc[0]; 
+  float odg = s->object[nk]->mc[1]; 
+  float odb = s->object[nk]->mc[2]; 
+  float osr = s->object[nk]->mc[3]; 
+  float osg = s->object[nk]->mc[4]; 
+  float osb = s->object[nk]->mc[5]; 
+  float ka  = s->object[nk]->mc[6]; 
+  float kd  = s->object[nk]->mc[7]; 
+  float ks  = s->object[nk]->mc[8]; 
+  float n   = s->object[nk]->mc[9]; 
+  float al  = s->object[nk]->mc[10];
+  float ior = s->object[nk]->mc[11];
 
   float ni,nt = 0;
 
@@ -179,7 +182,7 @@ float *refracRay(Scene* s,int k, float* o, float* T, float iior, int c) {
   float Frn  = pow((nt-ni)/(nt+ni),2);
 
   float *V = vec::normalize(vec::sub(s->eye,r));
-  float *N = vec::div(vec::sub(r,s->object[nk]->position),s->object[nk]->radius);
+  float *N = vec::div(vec::sub(r,s->object[k]->position),s->object[k]->radius);
   float *I = vec::negate(T);
   //float Fr = Fnot + (1 - Fnot) * pow((1 - vec::dot(I,N)), 5);
   float Fr = Frn + (1 - Frn) * pow((1 - vec::dot(I,N)),5);
@@ -214,6 +217,8 @@ float *refracRay(Scene* s,int k, float* o, float* T, float iior, int c) {
     float NoH = fmax(0.0,vec::dot(N,H));
     float mod = 1.0;
 
+    float temp_t = 100000;
+
     for (w = 0; w < s->object.size(); w++) {
     
       d = (float) pow(s->object[w]->B(r,vec::normalize(s->lights[m]->position)),2)-
@@ -224,8 +229,11 @@ float *refracRay(Scene* s,int k, float* o, float* T, float iior, int c) {
         t2 = (-1 * s->object[w]->B(r,vec::normalize(s->lights[m]->position))+sqrt(d)) / 2;
         t  = ((t1 < t2) ? t1 : t2);
 
-        mod = ((t > 0.1) ? 0 : 1.0);
-        w = s->object.size();
+        if (t < temp_t) {
+          temp_t = t;
+
+          mod = ((t > 0.1) ? 0 : 1.0);
+        }
       }
     }
 
@@ -244,7 +252,7 @@ float *refracRay(Scene* s,int k, float* o, float* T, float iior, int c) {
     float *nT = vec::add(vec::mul(sqrt(1-(pow(ni/nt,2)*(1-pow(vec::dot(N,I),2)))),
                                  vec::negate(N)), vec::mul((ni/nt),(vec::sub(vec::mul(
                                                            vec::dot(N,I),N),I))));
-    if (ior != 1) {
+    if (al != 1) {
       refrac = refracRay(s,nk,nr,nT,ni,c);
     } else {
       refrac[0] = 0;
@@ -261,8 +269,6 @@ float *refracRay(Scene* s,int k, float* o, float* T, float iior, int c) {
   if (ret[0] > 1.0) {ret[0] = 1.0;}
   if (ret[1] > 1.0) {ret[1] = 1.0;}
   if (ret[2] > 1.0) {ret[2] = 1.0;}
-
-  free(nr);
 
   return ret;
 }

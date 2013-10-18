@@ -200,8 +200,7 @@ float * shadeRay(Scene *s, int k, float *r, int c) {
                                vec::negate(N)), vec::mul((ni/nt),(vec::sub(vec::mul(
                                                          vec::dot(N,I),N),I))));
   spec = specShadeRay(s,k,r,R,1); 
-
-  if (nt != 1) {
+  if (al != 1) {
     refrac = refracRay(s,k,r,T,ni,1);
   } else {
     refrac[0] = 0;
