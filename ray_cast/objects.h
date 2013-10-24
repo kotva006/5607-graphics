@@ -3,14 +3,76 @@
 
 #include <cmath>
 #include <sstream>
+#include <vector>
+#include <string>
 
 class Objects {
   public:
     Objects(){};
-    ~Objects(){};
+    virtual ~Objects(){};
     float position[3];
     float mc[12];
-};
+} ;
+
+class Vertex {
+  public:
+    Vertex(){};
+    ~Vertex(){};
+    Vertex(std::istringstream& iss) {
+      iss >> this->pos[0];
+      iss >> this->pos[1];
+      iss >> this->pos[2];
+    }
+    float pos[3];
+} ;
+
+class TexCor {
+  public:
+    TexCor(){};
+    ~TexCor(){};
+    TexCor(std::istringstream& iss) {
+      iss >> this->pos[0];
+      iss >> this->pos[1];
+      iss >> this->pos[2];
+    }
+    float pos[3];
+} ;
+
+class NorDir {
+  public:
+    NorDir(){};
+    ~NorDir(){};
+    NorDir(std::istringstream& iss) {
+      iss >> this->pos[0];
+      iss >> this->pos[1];
+      iss >> this->pos[2];
+    }
+    float pos[3];
+} ;
+
+class Face {
+  public:
+    Face(){};
+    ~Face(){};
+    Face(std::istringstream& iss) {
+      iss >> this->pos[0];
+      iss >> this->pos[1];
+      iss >> this->pos[2];
+    }
+    float pos[3];
+} ;
+
+class Polygon: public Objects{
+  public:
+    Polygon(){};
+    ~Polygon(){};
+    std::vector<Vertex *> vertex;
+    std::vector<TexCor *> texcor;
+    std::vector<NorDir *> nordir;
+    std::vector<Face *> face;
+    std::string texture;
+} ;
+      
 
 class Light: public Objects{
   public:
@@ -32,11 +94,6 @@ class Light: public Objects{
 class Sphere: public Objects{
   public:
     Sphere(){};
-    Sphere(float m1,float m2,float m3) {
-      this->mc[0] = m1;
-      this->mc[1] = m2;
-      this->mc[2] = m3;
-    };
     float A(){return 1.0;};
     float B(float *o, float *d) {
       return (float) (2.0 * (d[0] * (o[0] - this->position[0]) +

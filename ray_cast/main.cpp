@@ -76,21 +76,27 @@ int main (int argc, char *argv[]) {
       float lowest = -1000;
       for (k=0; k<scene->object.size(); k++) {
 
-        float d = (float)pow((double)scene->object[k]->B(scene->eye,raydir),2)-
-                  (4*scene->object[k]->C(scene->eye));
+        Sphere *s = dynamic_cast<Sphere *>(scene->object[k]);
+        if ( s != NULL ) {
 
-        if(d >= 0 && scene->object[k]->position[2] > lowest) {
+          float d = (float)pow((double)s->B(scene->eye,raydir),2)-
+                    (4*s->C(scene->eye));
 
-          lowest = scene->object[k]->position[2];
-          t1 = (-1 * scene->object[k]->B(scene->eye,raydir)-sqrt(d)) / 2;
-          t2 = (-1 * scene->object[k]->B(scene->eye,raydir)+sqrt(d)) / 2;
-          t = ((t1 < t2) ?  t1 : t2);
-          r = vec::add(scene->eye,vec::mul(t,raydir));//intersection point
+          if(d >= 0 && s->position[2] > lowest) {
+
+            lowest = s->position[2];
+            t1 = (-1 * s->B(scene->eye,raydir)-sqrt(d)) / 2;
+            t2 = (-1 * s->B(scene->eye,raydir)+sqrt(d)) / 2;
+            t = ((t1 < t2) ?  t1 : t2);
+            r = vec::add(scene->eye,vec::mul(t,raydir));//intersection point
           
-          shade = shadeRay(scene, k, r, 0); //Shade ray and change color
-          sprintf(color, "%d %d %d ", (int) (shade[0] * mc),
-                                      (int) (shade[1] * mc),
-                                      (int) (shade[2] * mc));
+            shade = shadeRay(scene, k, r, 0); //Shade ray and change color
+            sprintf(color, "%d %d %d ", (int) (shade[0] * mc),
+                                        (int) (shade[1] * mc),
+                                        (int) (shade[2] * mc));
+          }
+        } else {
+          printf("Null s");
         }
       }
       // This assures we don't go over the 70 char per line limit of ppm
@@ -137,10 +143,19 @@ float * shadeRay(Scene *s, int k, float *r, int c) {
   float nt  = s->object[k]->mc[11];
 
 
-  //printf("R: %f %f %f \n", r[0], r[1], r[2]);
+  //printf("mc: %f %f %f \n", odr, odg, odb);
+
+  
 
   float *V = vec::normalize(vec::mul(-1,s->viewdir));
-  float *N = vec::div(vec::sub(r,s->object[k]->position),s->object[k]->radius);
+  float *N;
+  Sphere *sp = dynamic_cast<Sphere *>(s->object[k]);
+  if (sp != NULL) {
+    N = vec::div(vec::sub(r,sp->position),sp->radius);
+  } else {
+    N[0] = 0; N[1] = 1; N[2] = 0;
+    printf("Set normal weird\n");
+  }
   float ni = 1.0;
   float Frn  = pow((nt-ni)/(nt+ni),2);
   float *I = vec::negate(s->viewdir);
@@ -178,16 +193,23 @@ float * shadeRay(Scene *s, int k, float *r, int c) {
 
     for (w = 0; w < s->object.size(); w++) {
 
-      d = (float)pow((double)s->object[w]->B(r,vec::normalize(s->lights[m]->position)),2)-
-                (4*s->object[w]->C(r));
+      Sphere *sphere = dynamic_cast<Sphere *>(s->object[w]);
+  
+      if ( sphere != NULL ) {
+
+        d = (float)pow((double)sphere->B(r,vec::normalize(s->lights[m]->position)),2)-
+                  (4*sphere->C(r));
       
-      if (d >= 0) {
-        t1 = (-1 * s->object[w]->B(r,vec::normalize(s->lights[m]->position))-sqrt(d)) / 2;
-        t2 = (-1 * s->object[w]->B(r,vec::normalize(s->lights[m]->position))+sqrt(d)) / 2;
-        t = ((t1 < t2) ?  t1 : t2);
+        if (d >= 0) {
+          t1 = (-1 * sphere->B(r,vec::normalize(s->lights[m]->position))-sqrt(d)) / 2;
+          t2 = (-1 * sphere->B(r,vec::normalize(s->lights[m]->position))+sqrt(d)) / 2;
+          t = ((t1 < t2) ?  t1 : t2);
        
-        mod =  ((t > 0.1) ? 0 : 1.0);
-        w = s->object.size(); //break;
+          mod =  ((t > 0.1) ? 0 : 1.0);
+          w = s->object.size(); //break;
+        }
+      } else {
+        printf("sphere Null");
       }
     }
     temp_r1 += mod * lr * ((kd*odr*NoL) + (ks*osr*pow(NoH,n)));

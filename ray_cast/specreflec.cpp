@@ -1,5 +1,6 @@
 #include <cstdlib>
 #include <cstdio>
+#include <cmath>
 
 #include "scene.h"
 #include "vectors.h"
@@ -17,20 +18,25 @@ float *willHitWhere(Scene *s, float *r_dir, float *o) {
 
   for ( k = 0; k < s->object.size(); k++) {
 
-    float d = pow(s->object[k]->B(o,r),2) - (4*s->object[k]->C(o));
+    Sphere *sp = dynamic_cast<Sphere *>(s->object[k]);
 
-    if (d >= 0 )  {
+    if (sp != NULL) {
 
-      t1 = (-1 * s->object[k]->B(o,r) - sqrt(d)) / 2;
-      t2 = (-1 * s->object[k]->B(o,r) + sqrt(d)) / 2;
-      t  = ((t1 < t2) ? t1 : t2);
+      float d = pow(sp->B(o,r),2) - (4*sp->C(o));
 
-      if ( t < t_temp) {
+      if (d >= 0 )  {
 
-        t_temp = t;
-        ret = vec::add(o,vec::mul(t,r));
-        ret[3] = (float) k;
+        t1 = (-1 * sp->B(o,r) - sqrt(d)) / 2;
+        t2 = (-1 * sp->B(o,r) + sqrt(d)) / 2;
+        t  = ((t1 < t2) ? t1 : t2);
+ 
+        if ( fabs(t) < fabs(t_temp)) {
 
+          t_temp = t;
+          ret = vec::add(o,vec::mul(t,r));
+          ret[3] = (float) k;
+
+        }
       }
     }
   }
@@ -66,9 +72,15 @@ float *specShadeRay(Scene *s, int k, float *o, float *R, int c) {
   float nt = ior;
   float ni = 1.0;
   float Frn  = pow((nt-ni)/(nt+ni),2);
-
+  Sphere *sp = dynamic_cast<Sphere *>(s->object[nk]);
+  float *N;
+  if (sp != NULL) {
+    N = vec::div(vec::sub(r,sp->position),sp->radius);
+  } else {
+    N[0] = 0; N[1] = 1; N[2] = 0;
+    printf("Weird N use\n");
+  }
   float *V = vec::normalize(vec::sub(s->eye,r));
-  float *N = vec::div(vec::sub(r,s->object[nk]->position),s->object[nk]->radius);
   float *I = vec::negate(R);
   float Fr = Frn + (1 - Frn) * pow((1 - vec::dot(I,N)), 5);
 
@@ -103,17 +115,21 @@ float *specShadeRay(Scene *s, int k, float *o, float *R, int c) {
     float mod = 1.0;
 
     for (w = 0; w < s->object.size(); w++) {
+
+      Sphere *sphere = dynamic_cast<Sphere *>(s->object[w]);
+      if (sphere != NULL) {
     
-      d = (float) pow(s->object[w]->B(r,vec::normalize(s->lights[m]->position)),2)-
-                  (4*s->object[w]->C(r));
+        d = (float) pow(sphere->B(r,vec::normalize(s->lights[m]->position)),2)-
+                    (4*sphere->C(r));
 
-      if (d >= 0) {
-        t1 = (-1 * s->object[w]->B(r,vec::normalize(s->lights[m]->position))-sqrt(d)) / 2;
-        t2 = (-1 * s->object[w]->B(r,vec::normalize(s->lights[m]->position))+sqrt(d)) / 2;
-        t  = ((t1 < t2) ? t1 : t2);
+        if (d >= 0) {
+          t1 = (-1 * sphere->B(r,vec::normalize(s->lights[m]->position))-sqrt(d)) / 2;
+          t2 = (-1 * sphere->B(r,vec::normalize(s->lights[m]->position))+sqrt(d)) / 2;
+          t  = ((t1 < t2) ? t1 : t2);
 
-        mod = ((t > 0.1) ? 0 : 1.0);
-        w = s->object.size();
+          mod = ((t > 0.1) ? 0 : 1.0);
+          w = s->object.size();
+        }
       }
     }
 
@@ -170,19 +186,26 @@ float *refracRay(Scene* s,int k, float* o, float* T, float iior, int c) {
 
   float ni,nt = 0;
 
-  if (iior == ior) {
-    ni = ior;
-    nt = 1.0;
-  } else {
-    ni = 1.0;
+  if (iior == 1.0) {
+    ni = iior;
     nt = ior;
+  } else {
+    ni = ior;
+    nt = iior;
   }
 
   //float Fnot = s->object[k]->mc[8];
   float Frn  = pow((nt-ni)/(nt+ni),2);
 
   float *V = vec::normalize(vec::sub(s->eye,r));
-  float *N = vec::div(vec::sub(r,s->object[k]->position),s->object[k]->radius);
+  Sphere *sp = dynamic_cast<Sphere *>(s->object[nk]);
+  float *N;
+  if (sp != NULL) {
+    N = vec::div(vec::sub(r,sp->position),sp->radius);
+  } else {
+    N[0] = 0; N[1] = 1; N[2] = 0;
+    printf("Weird N use\n");
+  }
   float *I = vec::negate(T);
   //float Fr = Fnot + (1 - Fnot) * pow((1 - vec::dot(I,N)), 5);
   float Fr = Frn + (1 - Frn) * pow((1 - vec::dot(I,N)),5);
@@ -217,22 +240,23 @@ float *refracRay(Scene* s,int k, float* o, float* T, float iior, int c) {
     float NoH = fmax(0.0,vec::dot(N,H));
     float mod = 1.0;
 
-    float temp_t = 100000;
+    //float temp_t = 100000;
 
     for (w = 0; w < s->object.size(); w++) {
     
-      d = (float) pow(s->object[w]->B(r,vec::normalize(s->lights[m]->position)),2)-
-                  (4*s->object[w]->C(r));
+      Sphere *sphere = dynamic_cast<Sphere *>(s->object[w]);
+      if (sphere != NULL) {
+    
+        d = (float) pow(sphere->B(r,vec::normalize(s->lights[m]->position)),2)-
+                    (4*sphere->C(r));
 
-      if (d >= 0) {
-        t1 = (-1 * s->object[w]->B(r,vec::normalize(s->lights[m]->position))-sqrt(d)) / 2;
-        t2 = (-1 * s->object[w]->B(r,vec::normalize(s->lights[m]->position))+sqrt(d)) / 2;
-        t  = ((t1 < t2) ? t1 : t2);
-
-        if (t < temp_t) {
-          temp_t = t;
+        if (d >= 0) {
+          t1 = (-1 * sphere->B(r,vec::normalize(s->lights[m]->position))-sqrt(d)) / 2;
+          t2 = (-1 * sphere->B(r,vec::normalize(s->lights[m]->position))+sqrt(d)) / 2;
+          t  = ((t1 < t2) ? t1 : t2);
 
           mod = ((t > 0.1) ? 0 : 1.0);
+          w = s->object.size();
         }
       }
     }

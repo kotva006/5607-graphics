@@ -19,7 +19,7 @@ class Scene {
     int   pixheight;
     int   pixwidth;
     float bkgcolor[3];
-    std::vector<Sphere*> object;
+    std::vector<Objects *> object;
     std::vector<Light *> lights;
     bool error;
 
