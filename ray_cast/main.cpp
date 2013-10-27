@@ -19,6 +19,7 @@ void print_usage() {
 }
 
 float *shadeRay(Scene*, int, float*,int);
+float *willHitWhere2(Scene*,float*,float*);
 
 int main (int argc, char *argv[]) {
 
@@ -44,14 +45,15 @@ int main (int argc, char *argv[]) {
   Picture *picture = new Picture(scene);
 
   int i,j;
-  unsigned int k;
+  //unsigned int k;
   int counter = 0;
   float *winpos, *raydir, *shade, *r;
   string data = "";
   float mc = 255; // Max color value
-  float t,t1,t2 = 0;
+  //float t,t1,t2 = 0;
 
   cout << "Starting loop...\n";
+  cout << "sphere count " << scene->object.size()<< endl;
 
   /*
    * This loop does the main work of processing each of the rays.
@@ -73,8 +75,17 @@ int main (int argc, char *argv[]) {
                                   (int)(scene->bkgcolor[1] * mc),
                                   (int)(scene->bkgcolor[2] * mc));
 
-      float lowest = -1000;
-      for (k=0; k<scene->object.size(); k++) {
+      //float lowest = -1000;
+      //float hk = -1;
+      float *hit = willHitWhere2(scene, raydir, scene->eye);
+
+      if (hit[0] != -100000) {
+        shade = shadeRay(scene, (int) hit[3], hit, 0);
+        sprintf(color, "%d %d %d ", (int) (shade[0] * mc),
+                                    (int) (shade[1] * mc),
+                                    (int) (shade[2] * mc));
+      }
+      /*for (k=0; k<scene->object.size(); k++) {
 
         Sphere *s = dynamic_cast<Sphere *>(scene->object[k]);
         if ( s != NULL ) {
@@ -89,16 +100,19 @@ int main (int argc, char *argv[]) {
             t2 = (-1 * s->B(scene->eye,raydir)+sqrt(d)) / 2;
             t = ((t1 < t2) ?  t1 : t2);
             r = vec::add(scene->eye,vec::mul(t,raydir));//intersection point
+            hk = k;
           
-            shade = shadeRay(scene, k, r, 0); //Shade ray and change color
-            sprintf(color, "%d %d %d ", (int) (shade[0] * mc),
-                                        (int) (shade[1] * mc),
-                                        (int) (shade[2] * mc));
           }
         } else {
           printf("Null s");
         }
       }
+      if (hk >= 0) {
+        shade = shadeRay(scene, hk, r, 0); //Shade ray and change color
+        sprintf(color, "%d %d %d ", (int) (shade[0] * mc),
+                                    (int) (shade[1] * mc),
+                                    (int) (shade[2] * mc));
+      }*/
       // This assures we don't go over the 70 char per line limit of ppm
       counter++;
       if (counter > 4) {
@@ -126,6 +140,43 @@ int main (int argc, char *argv[]) {
 
 }
 
+float *willHitWhere2(Scene *s,float *r_dir, float *o) {
+  
+  float *r = vec::normalize(r_dir);
+  
+  float *ret = (float*) malloc(sizeof(float) * 4);
+  ret[0] = -100000;
+  float t1, t2, t = 0;
+  float t_temp = 100000;
+  //float low = -1000;
+  unsigned int i = 0;
+
+  for (i=0; i < s->object.size(); i++) {
+
+    Sphere *sphere = dynamic_cast<Sphere *>(s->object[i]);
+
+    if ( sphere != NULL ) {
+      
+      float d = pow(sphere->B(o,r),2) - (4 * sphere->C(o));
+
+      if ( d >= 0 ) {// && sphere->position[2] > low) {
+        //low = sphere->position[2]; 
+        t1 = (-1 * sphere->B(o,r) - sqrt(d)) / 2;
+        t2 = (-1 * sphere->B(o,r) + sqrt(d)) / 2;
+        t  = ((t1 < t2) ? t1 : t2);
+
+        if (fabs(t) < fabs(t_temp)) {
+          t_temp = t;
+          ret = vec::add(o,vec::mul(t,r));
+          ret[3] = (float) i;
+        }
+      }
+    }
+  }
+  return ret;
+}
+    
+
 float * shadeRay(Scene *s, int k, float *r, int c) {
 
   //Getting the values from the material for readbility
@@ -144,11 +195,12 @@ float * shadeRay(Scene *s, int k, float *r, int c) {
 
 
   //printf("mc: %f %f %f \n", odr, odg, odb);
+  //cout << "K: " << k << " ";
 
   
 
   float *V = vec::normalize(vec::mul(-1,s->viewdir));
-  float *N;
+  float *N = V;//gets rid of error
   Sphere *sp = dynamic_cast<Sphere *>(s->object[k]);
   if (sp != NULL) {
     N = vec::div(vec::sub(r,sp->position),sp->radius);
@@ -217,22 +269,22 @@ float * shadeRay(Scene *s, int k, float *r, int c) {
     temp_r3 += mod * lb * ((kd*odb*NoL) + (ks*osb*pow(NoH,n)));
     
   }
-  float *R = vec::sub(vec::mul(2 * vec::dot(N,I),N),I);
-  float *T = vec::add(vec::mul(sqrt(1-(pow(ni/nt,2)*(1-pow(vec::dot(N,I),2)))),
-                               vec::negate(N)), vec::mul((ni/nt),(vec::sub(vec::mul(
-                                                         vec::dot(N,I),N),I))));
-  spec = specShadeRay(s,k,r,R,1); 
+  //float *R = vec::sub(vec::mul(2 * vec::dot(N,I),N),I);
+  //float *T = vec::add(vec::mul(sqrt(1-(pow(ni/nt,2)*(1-pow(vec::dot(N,I),2)))),
+  //                             vec::negate(N)), vec::mul((ni/nt),(vec::sub(vec::mul(
+  //                                                       vec::dot(N,I),N),I))));
+  //spec = specShadeRay(s,k,r,R,1); 
   if (al != 1) {
-    refrac = refracRay(s,k,r,T,ni,1);
+    //refrac = refracRay(s,k,r,T,ni,1);
   } else {
     refrac[0] = 0;
     refrac[1] = 0;
     refrac[2] = 0;
   }
 
-  ret[0] = ka*odr + temp_r1 + Fr * spec[0] + (1-Fr) * (1 - al) * refrac[0];
-  ret[1] = ka*odg + temp_r2 + Fr * spec[1] + (1-Fr) * (1 - al) * refrac[1];
-  ret[2] = ka*odb + temp_r3 + Fr * spec[2] + (1-Fr) * (1 - al) * refrac[2];
+  ret[0] = ka*odr + temp_r1;// + Fr * spec[0];// + (1-Fr) * (1 - al) * refrac[0];
+  ret[1] = ka*odg + temp_r2;// + Fr * spec[1];// + (1-Fr) * (1 - al) * refrac[1];
+  ret[2] = ka*odb + temp_r3;// + Fr * spec[2];// + (1-Fr) * (1 - al) * refrac[2];
 
   //printf("Set return: %f %f %f\n", ret[0], ret[1], ret[2]);
 
