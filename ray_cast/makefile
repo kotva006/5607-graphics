@@ -4,7 +4,7 @@ CFLAGS =-c -Wall
 
 
 all: main.o scene.o picture.o vectors.o window.o specreflec.o
-	$(CC) main.o scene.o picture.o vectors.o window.o specreflec.o -o ray
+	$(CC) -Wall -g main.o scene.o picture.o vectors.o window.o specreflec.o -o ray
 
 main.o: main.cpp
 	$(CC) $(CFLAGS) main.cpp

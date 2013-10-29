@@ -71,6 +71,10 @@ namespace vec {
     return (v1[0]*v2[0]) + (v1[1]*v2[1]) + (v1[2]*v2[2]); 
 
   }
+
+  float len(float* v) {
+    return (float) sqrt(pow(v[0],2) + pow(v[1],2) + pow(v[2],2));
+  }
     
 
   float* normalize(float* v) {

@@ -19,6 +19,7 @@ float *willHitWhere(Scene *s, float *r_dir, float *o) {
   for ( k = 0; k < s->object.size(); k++) {
 
     Sphere *sp = dynamic_cast<Sphere *>(s->object[k]);
+    Polygon *p = dynamic_cast<Polygon *>(s->object[k]);
 
     if (sp != NULL) {
 
@@ -38,6 +39,7 @@ float *willHitWhere(Scene *s, float *r_dir, float *o) {
 
         }
       }
+    } else if (p != NULL) {
     }
   }
   return ret;
@@ -73,9 +75,11 @@ float *specShadeRay(Scene *s, int k, float *o, float *R, int c) {
   float ni = 1.0;
   float Frn  = pow((nt-ni)/(nt+ni),2);
   Sphere *sp = dynamic_cast<Sphere *>(s->object[nk]);
-  float *N;
+  Polygon *p = dynamic_cast<Polygon *>(s->object[nk]);
+  float *N = r;//Gets rid of warning and N gets changed anyway
   if (sp != NULL) {
     N = vec::div(vec::sub(r,sp->position),sp->radius);
+  } else if (p != NULL) {
   } else {
     N[0] = 0; N[1] = 1; N[2] = 0;
     printf("Weird N use\n");
@@ -199,7 +203,7 @@ float *refracRay(Scene* s,int k, float* o, float* T, float iior, int c) {
 
   float *V = vec::normalize(vec::sub(s->eye,r));
   Sphere *sp = dynamic_cast<Sphere *>(s->object[nk]);
-  float *N;
+  float *N = V;//gets rid of warning and N gets changed anyway
   if (sp != NULL) {
     N = vec::div(vec::sub(r,sp->position),sp->radius);
   } else {
