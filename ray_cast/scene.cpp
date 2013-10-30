@@ -85,7 +85,9 @@ void Scene::createScene(char *name) {
     } else if (value.compare("materialcolor")==0){
         // store color attributes
         if (poly->vertex.size() > 0) {
-          poly->setMC(mc);
+          for(i=0; i<12; i++) {
+            poly->mc[i] = mc[i];
+          }
           this->object.push_back(poly);
           poly = new Polygon();
           v_count  = 0;
@@ -95,7 +97,9 @@ void Scene::createScene(char *name) {
         setmc(line,mc);
     } else if (value.compare("texture") == 0) {
         if (poly->vertex.size() > 0) {
-          poly->setMC(mc);
+          for(i=0; i<12; i++) {
+            poly->mc[i] = mc[i];
+          }
           this->object.push_back(poly);
           poly = new Polygon();
           v_count  = 0;
@@ -105,6 +109,16 @@ void Scene::createScene(char *name) {
         setTmc(mc);
         iss >> poly->texture;
     } else if (value.compare("sphere") == 0) {
+        if (poly->vertex.size() > 0) {
+          for(i=0; i<12; i++) {
+            poly->mc[i] = mc[i];
+          }
+          this->object.push_back(poly);
+          poly = new Polygon();
+          v_count  = 0;
+          vt_count = 0;
+          vn_count = 0;
+        }
         // Creates a sphere with the input color extracted
         // Then sets the position and the radius of the sphere
         Sphere *sphere = new Sphere();
@@ -134,7 +148,9 @@ void Scene::createScene(char *name) {
     } else if (value.compare("") == 0) {
         //Blank line do nothing
         if (poly->vertex.size() > 0) {
-          poly->setMC(mc);
+          for(i=0; i<12; i++) {
+            poly->mc[i] = mc[i];
+          }
           this->object.push_back(poly);
           poly = new Polygon();
           v_count  = 0;
@@ -149,7 +165,9 @@ void Scene::createScene(char *name) {
   }
 
   if (poly->vertex.size() > 0) {
-    poly->setMC(mc);
+    for(i=0; i<12; i++) {
+      poly->mc[i] = mc[i];
+    }
     this->object.push_back(poly);
   }
   inFile.close();

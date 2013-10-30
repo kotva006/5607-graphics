@@ -75,17 +75,6 @@ class Face {
       iss >> this->data[2];
     }
     std::string data[3];
-} ;
-
-class Polygon: public Objects{
-  public:
-    Polygon(){};
-    ~Polygon(){};
-    std::vector<Vertex *> vertex;
-    std::vector<TexCor *> texcor;
-    std::vector<NorDir *> nordir;
-    std::vector<Face *> face;
-    std::string texture;
     float a;
     float b;
     float c;
@@ -121,7 +110,8 @@ class Polygon: public Objects{
       if (!(this->alpha >= 0 && this->alpha <= 1 && 
             this->beta >= 0 && this->beta <= 1 &&
             this->gamma >= 0 && this->gamma <= 1)) { return NULL;}
-      if (!(this->alpha + this->beta + this->gamma - 1 > -0.001)) {return NULL;}
+      if (!((this->alpha + this->beta + this->gamma  == 1) ||
+             (this->alpha + this->beta + this->gamma > 2.001))) {return NULL;}
       ret[0] = this->alpha;
       ret[1] = this->beta;
       ret[2] = this->gamma;
@@ -137,13 +127,18 @@ class Polygon: public Objects{
       return -1.0 * (this->a*o[0] + this->b*o[1] + this->c*o[2] + this->d) /
                     (this->a*r[0] + this->b*r[1] + this->c*r[2]);
     };
-    void setMC(float *mc) {
-      int i = 0;
-      for(i=0;i<12;i++){
-        this->mc[i] = mc[i];
-      }
-    };
-      
+} ;
+
+class Polygon: public Objects{
+  public:
+    Polygon(){};
+    ~Polygon(){};
+    std::vector<Vertex *> vertex;
+    std::vector<TexCor *> texcor;
+    std::vector<NorDir *> nordir;
+    std::vector<Face *> face;
+    std::string texture;
+
 } ;
       
 

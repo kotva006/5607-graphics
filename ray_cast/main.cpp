@@ -67,9 +67,9 @@ int main (int argc, char *argv[]) {
   //cout << "P: " << poly->vertex[0]->pos[0] << endl;
   //cout << "P: " << poly->vertex[1]->pos[0] << endl;
   //cout << "P: " << poly->vertex[2]->pos[0] << endl;
-  cout << "MC:" << scene->object[0]->mc[0] << endl;
-  cout << "MC:" << scene->object[0]->mc[1] << endl;
-  cout << "MC:" << scene->object[0]->mc[2] << endl;
+  //cout << "MC:" << scene->object[0]->mc[0] << endl;
+  //cout << "MC:" << scene->object[1]->mc[0] << endl;
+  //cout << "MC:" << scene->object[0]->mc[2] << endl;
   for ( i=0; i<scene->pixheight; i++) {
     for ( j=0; j<scene->pixwidth; j++) {
 
@@ -91,7 +91,6 @@ int main (int argc, char *argv[]) {
         Sphere *s = dynamic_cast<Sphere *>(scene->object[k]);
         Polygon *p = dynamic_cast<Polygon *>(scene->object[k]);
         if ( s != NULL ) {
-          cout<<"Doing things it shouldn't"<<endl;
 
           float d = (float)pow((double)s->B(scene->eye,raydir),2)-
                     (4*s->C(scene->eye));
@@ -138,16 +137,16 @@ int main (int argc, char *argv[]) {
                   p2[2] = p->vertex[n]->pos[2];
                 }
               }
-              p->D(p0,p1,p2);
-              if (p->isNotZero(raydir)) {
-                p_t = p->t(scene->eye,raydir);
+              p->face[m]->D(p0,p1,p2);
+              if (p->face[m]->isNotZero(raydir)) {
+                p_t = p->face[m]->t(scene->eye,raydir);
                 if(p_t > 0 && p_t < p_lowest) {
                   float *p_0 = vec::add(scene->eye,vec::mul(p_t,raydir));
-                  bcc = p->getBCC(p_0,p0,p1,p2);
+                  bcc = p->face[m]->getBCC(p_0,p0,p1,p2);
                   if (bcc != NULL) {
                     //cout<<"P0 "<<p0[0]<<" "<<p0[1]<<" "<<p0[2]<<endl;
                     p_lowest = p_t;
-                    p_k = m;
+                    p_k = k;
                   }
                 }
               }
@@ -233,7 +232,7 @@ float * shadeRay(Scene *s, int k, float *r, int c) {
   if (sp != NULL) {
     N = vec::div(vec::sub(r,sp->position),sp->radius);
   } else if(p != NULL) {
-    N = p->N;
+    N = p->face[0]->N;
   } else {
     N[0] = 0; N[1] = 1; N[2] = 0;
     printf("Set normal weird\n");
@@ -324,9 +323,9 @@ float * shadeRay(Scene *s, int k, float *r, int c) {
                 p2[2] = p->vertex[n]->pos[2];
               }
             }
-            p->D(p0,p1,p2);
-            if (p->isNotZero(vec::normalize(s->lights[m]->position))) {
-              p_t = p->t(s->eye,s->lights[m]->position);
+            p->face[m]->D(p0,p1,p2);
+            if (p->face[m]->isNotZero(vec::normalize(s->lights[m]->position))) {
+              p_t = p->face[m]->t(s->eye,s->lights[m]->position);
               if(p_t > 0 && fabs(p_t) < fabs(p_lowest)) {
                 p_lowest = p_t;
                 p_k = m;
