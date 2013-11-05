@@ -1,5 +1,7 @@
 testing/
 old*/
+ray_cast/test*
+ray_cast/temp*
 ray
 *.o
 *.swp
