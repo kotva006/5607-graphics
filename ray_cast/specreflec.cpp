@@ -12,7 +12,7 @@ float *willHitWhere(Scene *s, float *r_dir, float *o) {
 
   float *ret = (float*) malloc(sizeof(float) * 4); //Where is hit and what object
   ret[0] = -100000;
-  float t1, t2, t = 0;
+  float t1 = 0, t2 = 0, t = 0;
   float t_temp = 100000;
   unsigned int k = 0;
 
@@ -89,11 +89,11 @@ float *specShadeRay(Scene *s, int k, float *o, float *R, int c) {
   float Fr = Frn + (1 - Frn) * pow((1 - vec::dot(I,N)), 5);
 
 
-  unsigned int w,m;
+  unsigned int w = 0,m = 0;
   float *ret = (float *) malloc(sizeof(float) * 3);
   float *spec = (float *) malloc(sizeof(float) * 3);
   float *nr   = (float *) malloc(sizeof(float) * 3);
-  float temp_r1, temp_r2, temp_r3, d, t, t1, t2 = 0;
+  float temp_r1 = 0, temp_r2 =0, temp_r3=0, d=0, t=0, t1=0, t2 = 0;
 
   nr[0] = hitStruct[0];
   nr[1] = hitStruct[1];
@@ -188,7 +188,7 @@ float *refracRay(Scene* s,int k, float* o, float* T, float iior, int c) {
   float al  = s->object[nk]->mc[10];
   float ior = s->object[nk]->mc[11];
 
-  float ni,nt = 0;
+  float ni = 0,nt = 0;
 
   if (iior == 1.0) {
     ni = iior;
@@ -214,12 +214,12 @@ float *refracRay(Scene* s,int k, float* o, float* T, float iior, int c) {
   //float Fr = Fnot + (1 - Fnot) * pow((1 - vec::dot(I,N)), 5);
   float Fr = Frn + (1 - Frn) * pow((1 - vec::dot(I,N)),5);
 
-  unsigned int w,m;
+  unsigned int w = 0,m = 0;
   float *ret = (float *) malloc(sizeof(float) * 3);
   float *refrac = (float *) malloc(sizeof(float) * 3);
 
   float *nr   = (float *) malloc(sizeof(float) * 3);
-  float temp_r1, temp_r2, temp_r3, d, t, t1, t2 = 0;
+  float temp_r1=0, temp_r2=0, temp_r3=0, d=0, t=0, t1=0, t2 = 0;
 
   nr[0] = hitStruct[0];
   nr[1] = hitStruct[1];

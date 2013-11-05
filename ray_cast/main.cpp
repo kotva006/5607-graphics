@@ -46,8 +46,8 @@ int main (int argc, char *argv[]) {
   int i,j;
   unsigned int k,m,n = 0;
   int counter = 0;
-  float *winpos, *raydir, *r, *bcc;//*shade, *r;
-  float shade[3];
+  float *winpos, *raydir, *r, *bcc, *shade;
+  //float shade[3];
   string data = "";
   float mc = 255; // Max color value
   float t,s_t,p_t,s_t1,s_t2 = 0;
@@ -62,14 +62,8 @@ int main (int argc, char *argv[]) {
    * Finally if the color is determined it gets added to the data of the
    * picture.
    */
-  Polygon *poly = dynamic_cast<Polygon *>(scene->object[0]);
+  //Polygon *poly = dynamic_cast<Polygon *>(scene->object[1]);
   
-  //cout << "P: " << poly->vertex[0]->pos[0] << endl;
-  //cout << "P: " << poly->vertex[1]->pos[0] << endl;
-  //cout << "P: " << poly->vertex[2]->pos[0] << endl;
-  //cout << "MC:" << scene->object[0]->mc[0] << endl;
-  //cout << "MC:" << scene->object[1]->mc[0] << endl;
-  //cout << "MC:" << scene->object[0]->mc[2] << endl;
   for ( i=0; i<scene->pixheight; i++) {
     for ( j=0; j<scene->pixwidth; j++) {
 
@@ -86,6 +80,7 @@ int main (int argc, char *argv[]) {
       float s_lowest = 100000;
       float p_lowest = 100000;
       int s_k = -1, p_k = -1, x = -1;
+      float *BCC = NULL;
       for (k=0; k < scene->object.size(); k++) {
 
         Sphere *s = dynamic_cast<Sphere *>(scene->object[k]);
@@ -109,7 +104,6 @@ int main (int argc, char *argv[]) {
         
           float p0[3], p1[3], p2[3];
           bcc = NULL;
-          //cout<<"MY P_K "<<p_k<<" "<<s_k<<endl;
           for (m=0; m < p->face.size(); m++) {
 
             string tag_1 = p->face[m]->data[0];
@@ -125,13 +119,13 @@ int main (int argc, char *argv[]) {
                   p0[2] = p->vertex[n]->pos[2];
                 }
                   
-                if (tag_2.compare(p->vertex[n]->tag) == 0) {
+                else if (tag_2.compare(p->vertex[n]->tag) == 0) {
                   p1[0] = p->vertex[n]->pos[0];
                   p1[1] = p->vertex[n]->pos[1];
                   p1[2] = p->vertex[n]->pos[2];
                 }
 
-                if (tag_3.compare(p->vertex[n]->tag) == 0) {
+                else if (tag_3.compare(p->vertex[n]->tag) == 0) {
                   p2[0] = p->vertex[n]->pos[0];
                   p2[1] = p->vertex[n]->pos[1];
                   p2[2] = p->vertex[n]->pos[2];
@@ -144,7 +138,7 @@ int main (int argc, char *argv[]) {
                   float *p_0 = vec::add(scene->eye,vec::mul(p_t,raydir));
                   bcc = p->face[m]->getBCC(p_0,p0,p1,p2);
                   if (bcc != NULL) {
-                    //cout<<"P0 "<<p0[0]<<" "<<p0[1]<<" "<<p0[2]<<endl;
+                    BCC = bcc;
                     p_lowest = p_t;
                     p_k = k;
                   }
@@ -161,18 +155,16 @@ int main (int argc, char *argv[]) {
         }
       }
       if (p_k != -1 || s_k != -1) {
-        cout<<"P_k "<<p_k<<" S_k "<<s_k<<endl;
         t = (p_lowest<s_lowest) ? p_lowest : s_lowest;
         x = (p_lowest<s_lowest) ? p_k : s_k;
         if (x == -1) {
-          cout<<"BAD:"<<p_k<<s_k<<p_lowest<<s_lowest<<endl;
         }
         r = vec::add(scene->eye,vec::mul(t,raydir));//intersection point
-        //shade = shadeRay(scene, k, r, 0); //Shade ray and change color
+        shade = shadeRay(scene, x, r, 0); //Shade ray and change color
         
-        shade[0] = scene->object[x]->mc[0];
-        shade[1] = scene->object[x]->mc[1];
-        shade[2] = scene->object[x]->mc[2];
+        //shade[0] = scene->object[x]->mc[0];
+        //shade[1] = scene->object[x]->mc[1];
+        //shade[2] = scene->object[x]->mc[2];
         sprintf(color, "%d %d %d ", (int) (shade[0] * mc),
                                     (int) (shade[1] * mc),
                                     (int) (shade[2] * mc));
@@ -205,7 +197,6 @@ int main (int argc, char *argv[]) {
 }
 
 float * shadeRay(Scene *s, int k, float *r, int c) {
-
   //Getting the values from the material for readbility
   float odr = s->object[k]->mc[0];
   float odg = s->object[k]->mc[1];
@@ -224,6 +215,9 @@ float * shadeRay(Scene *s, int k, float *r, int c) {
   //printf("mc: %f %f %f \n", odr, odg, odb);
 
   
+  float *ret = (float *) malloc(sizeof(float) * 3);
+  float *spec = (float *) malloc(sizeof(float) * 3); 
+  float *refrac = (float *) malloc(sizeof(float) * 3); 
 
   float *V = vec::normalize(vec::mul(-1,s->viewdir));
   float *N = V;//gets rid of warning N gets changed anyway
@@ -232,7 +226,10 @@ float * shadeRay(Scene *s, int k, float *r, int c) {
   if (sp != NULL) {
     N = vec::div(vec::sub(r,sp->position),sp->radius);
   } else if(p != NULL) {
-    N = p->face[0]->N;
+    //N = p->face[0]->N;
+    ret[0] = odr; ret[1] = odg; ret[2] = odb;
+    return ret;
+
   } else {
     N[0] = 0; N[1] = 1; N[2] = 0;
     printf("Set normal weird\n");
@@ -243,9 +240,6 @@ float * shadeRay(Scene *s, int k, float *r, int c) {
   float Fr = Frn + (1 - Frn) * pow((1 - vec::dot(I,N)),5);
 
 
-  float *ret = (float *) malloc(sizeof(float) * 3);
-  float *spec = (float *) malloc(sizeof(float) * 3); 
-  float *refrac = (float *) malloc(sizeof(float) * 3); 
   unsigned int m,w;
   float temp_r1 = 0, temp_r2 = 0, temp_r3 = 0, d = 0, 
         t = 0, t1 = 0, t2 = 0;
@@ -275,6 +269,7 @@ float * shadeRay(Scene *s, int k, float *r, int c) {
 
     float p_lowest = 0,p_k = 0;
 
+
     for (w = 0; w < s->object.size(); w++) {
 
       Sphere *sphere = dynamic_cast<Sphere *>(s->object[w]);
@@ -296,45 +291,47 @@ float * shadeRay(Scene *s, int k, float *r, int c) {
       } else if (poly != NULL) {
         float p0[3], p1[3], p2[3];
         float p_t = -1;
-        for (m=0; m < p->face.size(); m++) {
+        for (m=0; m < poly->face.size(); m++) {
 
-          string tag_1 = p->face[m]->data[0];
-          string tag_2 = p->face[m]->data[1];
-          string tag_3 = p->face[m]->data[2];
+          string tag_1 = poly->face[m]->data[0];
+          string tag_2 = poly->face[m]->data[1];
+          string tag_3 = poly->face[m]->data[2];
 
 
-          if (tag_1.length() == 1) { //for regular verticies
-            for(n=0; n < p->vertex.size(); n++) {
-              if (tag_1.compare(p->vertex[n]->tag) == 0) {
-                p0[0] = p->vertex[n]->pos[0];
-                p0[1] = p->vertex[n]->pos[1];
-                p0[2] = p->vertex[n]->pos[2];
+          if (tag_1.length() == 2) { //for regular verticies
+            for(n=0; n < poly->vertex.size(); n++) {
+              if (tag_1.compare(poly->vertex[n]->tag) == 0) {
+                p0[0] = poly->vertex[n]->pos[0];
+                p0[1] = poly->vertex[n]->pos[1];
+                p0[2] = poly->vertex[n]->pos[2];
               }
                   
-              if (tag_2.compare(p->vertex[n]->tag) == 0) {
-                p1[0] = p->vertex[n]->pos[0];
-                p1[1] = p->vertex[n]->pos[1];
-                p1[2] = p->vertex[n]->pos[2];
+              else if (tag_2.compare(poly->vertex[n]->tag) == 0) {
+                p1[0] = poly->vertex[n]->pos[0];
+                p1[1] = poly->vertex[n]->pos[1];
+                p1[2] = poly->vertex[n]->pos[2];
               }
 
-              if (tag_3.compare(p->vertex[n]->tag) == 0) {
-                p2[0] = p->vertex[n]->pos[0];
-                p2[1] = p->vertex[n]->pos[1];
-                p2[2] = p->vertex[n]->pos[2];
+              else if (tag_3.compare(poly->vertex[n]->tag) == 0) {
+                p2[0] = poly->vertex[n]->pos[0];
+                p2[1] = poly->vertex[n]->pos[1];
+                p2[2] = poly->vertex[n]->pos[2];
               }
             }
-            p->face[m]->D(p0,p1,p2);
-            if (p->face[m]->isNotZero(vec::normalize(s->lights[m]->position))) {
-              p_t = p->face[m]->t(s->eye,s->lights[m]->position);
+            poly->face[m]->D(p0,p1,p2);
+            if (poly->face[m]->isNotZero(vec::normalize(s->lights[m]->position))) {
+              p_t = poly->face[m]->t(s->eye,s->lights[m]->position);
               if(p_t > 0 && fabs(p_t) < fabs(p_lowest)) {
                 p_lowest = p_t;
                 p_k = m;
+                mod = al;
               }
             }
           }
         }
       } else {
         printf("sphere Null");
+        mod = al;
       }
     }
     temp_r1 += mod * lr * ((kd*odr*NoL) + (ks*osr*pow(NoH,n)));
@@ -346,24 +343,18 @@ float * shadeRay(Scene *s, int k, float *r, int c) {
   float *T = vec::add(vec::mul(sqrt(1-(pow(ni/nt,2)*(1-pow(vec::dot(N,I),2)))),
                                vec::negate(N)), vec::mul((ni/nt),(vec::sub(vec::mul(
                                                          vec::dot(N,I),N),I))));
-  //spec = specShadeRay(s,k,r,R,1); 
-  if ( al != 1 && p == NULL ) {
-    //refrac = refracRay(s,k,r,T,ni,1);
+  spec = specShadeRay(s,k,r,R,1); 
+  if ( al != 1 ) {
+    refrac = refracRay(s,k,r,T,ni,1);
   } else {
     refrac[0] = 0;
     refrac[1] = 0;
     refrac[2] = 0;
   }
 
-  ret[0] = ka*odr + temp_r1;// + Fr * spec[0] + (1-Fr) * (1 - al) * refrac[0];
-  ret[1] = ka*odg + temp_r2;// + Fr * spec[1] + (1-Fr) * (1 - al) * refrac[1];
-  ret[2] = ka*odb + temp_r3;// + Fr * spec[2] + (1-Fr) * (1 - al) * refrac[2];
-
-  if (spec[0] * Fr != 0 || spec[1] *Fr != 0 || spec[2] * Fr != 0) {
-    //printf("Spec %f %f %f ", spec[0] * Fr, spec[1] * Fr, spec[2] * Fr);
-  }
-
-  //printf("Set return: %f %f %f\n", ret[0], ret[1], ret[2]);
+  ret[0] = ka*odr + temp_r1 + Fr * spec[0] + (1-Fr) * (1 - al) * refrac[0];
+  ret[1] = ka*odg + temp_r2 + Fr * spec[1] + (1-Fr) * (1 - al) * refrac[1];
+  ret[2] = ka*odb + temp_r3 + Fr * spec[2] + (1-Fr) * (1 - al) * refrac[2];
 
   if (ret[0] > 1.0) {ret[0] = 1;}
   if (ret[1] > 1.0) {ret[1] = 1;}

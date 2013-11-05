@@ -110,8 +110,7 @@ class Face {
       if (!(this->alpha >= 0 && this->alpha <= 1 && 
             this->beta >= 0 && this->beta <= 1 &&
             this->gamma >= 0 && this->gamma <= 1)) { return NULL;}
-      if (!((this->alpha + this->beta + this->gamma  == 1) ||
-             (this->alpha + this->beta + this->gamma > 2.001))) {return NULL;}
+      if (!(this->alpha + this->beta + this->gamma  -1 > -0.0001)) {return NULL;}
       ret[0] = this->alpha;
       ret[1] = this->beta;
       ret[2] = this->gamma;
