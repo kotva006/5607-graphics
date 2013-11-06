@@ -6,10 +6,10 @@ CFLAGS =-c -Wall
 all: main.o scene.o picture.o vectors.o window.o specreflec.o
 	$(CC) -Wall -g main.o scene.o picture.o vectors.o window.o specreflec.o -o ray
 
-main.o: main.cpp
+main.o: main.cpp vector.h
 	$(CC) $(CFLAGS) main.cpp
 
-scene.o: scene.cpp scene.h objects.h
+scene.o: scene.cpp scene.h objects.h vector.h
 	$(CC) $(CFLAGS) scene.cpp
 
 picture.o: picture.cpp picture.h

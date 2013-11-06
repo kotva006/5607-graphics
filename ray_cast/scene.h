@@ -10,15 +10,15 @@ class Scene {
   public:
     Scene() { this->error = false;};
     ~Scene(){};
-    float eye[3];
-    float viewdir[3];
-    float updir[3];
+    Vec   eye;
+    Vec   viewdir;
+    Vec   updir;
     float viewdist;
     float fovv;
     float aspect;
     int   pixheight;
     int   pixwidth;
-    float bkgcolor[3];
+    Vec   bkgcolor;
     std::vector<Objects *> object;
     std::vector<Light *> lights;
     bool error;

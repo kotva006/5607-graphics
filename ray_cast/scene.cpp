@@ -4,7 +4,7 @@
 #include <iostream>
 
 #include "scene.h"
-#include "vectors.h"
+#include "vector.h"
 #include "objects.h"
 
 using namespace std;
@@ -55,17 +55,17 @@ void Scene::createScene(char *name) {
     iss >> value;
 
     if (value.compare("eye") == 0) {
-        iss >> this->eye[0];
-        iss >> this->eye[1];
-        iss >> this->eye[2];
+        iss >> this->eye.x;
+        iss >> this->eye.y;
+        iss >> this->eye.z;
     } else if (value.compare("viewdir") == 0) {
-        iss >> this->viewdir[0];
-        iss >> this->viewdir[1];
-				iss >> this->viewdir[2];
+        iss >> this->viewdir.x;
+        iss >> this->viewdir.y;
+				iss >> this->viewdir.z;
 	  } else if (value.compare("updir") == 0) {
-				iss >> this->updir[0];
-				iss >> this->updir[1];
-				iss >> this->updir[2];
+				iss >> this->updir.x;
+				iss >> this->updir.y;
+				iss >> this->updir.z;
 	  } else if (value.compare("viewdist") == 0) {
 				iss >> this->viewdist;
 		} else if (value.compare("fovv") == 0) {
@@ -76,9 +76,9 @@ void Scene::createScene(char *name) {
         iss >> this->pixheight;
         this->findPixWidth();
     } else if (value.compare("bkgcolor") == 0) {
-				iss >> this->bkgcolor[0];
-        iss >> this->bkgcolor[1];
-        iss >> this->bkgcolor[2];
+				iss >> this->bkgcolor.x;
+        iss >> this->bkgcolor.y;
+        iss >> this->bkgcolor.z;
     } else if (value.compare("light") == 0) {
         Light *light = new Light(iss);
         this->lights.push_back(light); 
@@ -122,9 +122,9 @@ void Scene::createScene(char *name) {
         // Creates a sphere with the input color extracted
         // Then sets the position and the radius of the sphere
         Sphere *sphere = new Sphere();
-        iss >> sphere->position[0];
-        iss >> sphere->position[1];
-        iss >> sphere->position[2];
+        iss >> sphere->pos.x;
+        iss >> sphere->pos.y;
+        iss >> sphere->pos.z;
         iss >> sphere->radius;
         for (i=0; i < 12; i++) {
           sphere->mc[i] = mc[i];
@@ -172,10 +172,7 @@ void Scene::createScene(char *name) {
   }
   inFile.close();
 
-  float *ret = vec::normalize(this->viewdir);
-  this->viewdir[0] = ret[0];
-  this->viewdir[1] = ret[1];
-  this->viewdir[2] = ret[2];
+  this->viewdir = norm(this->viewdir);
 
 }
 

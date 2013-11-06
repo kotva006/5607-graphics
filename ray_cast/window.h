@@ -12,12 +12,12 @@ class Window {
     Window(Scene*);
     float h; //height of view window
     float w; //width of view window
-    float *ul; //up left corner of window
-    float *ur; //up right corner of window
-    float *ll; //lower left corner of window
-    float *lr; //lower right corner of window
-    float *deltah;
-    float *deltav;
+    Vec ul; //up left corner of window
+    Vec ur; //up right corner of window
+    Vec ll; //lower left corner of window
+    Vec lr; //lower right corner of window
+    Vec deltah;
+    Vec deltav;
     
 } ;
 

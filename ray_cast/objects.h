@@ -7,17 +7,25 @@
 #include <vector>
 #include <string>
 
-#include "vectors.h"
+#include "vector.h"
 
 class Objects {
   public:
     Objects(){};
     virtual ~Objects(){};
-    float position[3];
+    Vec pos;
     float mc[12];
 } ;
 
-class Vertex {
+class VerBase {
+  public:
+    VerBase(){};
+    virtual ~VerBase() {};
+    Vec pos;
+    std::string tag;
+} ;
+
+class Vertex : public VerBase {
   public:
     Vertex(){};
     ~Vertex(){};
@@ -25,44 +33,41 @@ class Vertex {
       std::ostringstream ss;
       ss << "v" << count;
       this->tag = ss.str();
-      iss >> this->pos[0];
-      iss >> this->pos[1];
-      iss >> this->pos[2];
+      iss >> this->pos.x;
+      iss >> this->pos.y;
+      iss >> this->pos.z;
     }
-    std::string tag;
-    float pos[3];
 } ;
 
-class TexCor {
+class TexCor : public VerBase {
   public:
     TexCor(){};
     ~TexCor(){};
+    Vec pos;
+    
     TexCor(std::istringstream& iss, int count) {
       std::ostringstream ss;
       ss << "v" << count;
       this->tag = ss.str();
-      iss >> this->pos[0];
-      iss >> this->pos[1];
-      iss >> this->pos[2];
+      iss >> this->pos.x;
+      iss >> this->pos.y;
+      iss >> this->pos.z;
     }
-    std::string tag;
-    float pos[3];
 } ;
 
-class NorDir {
+class NorDir : public VerBase {
   public:
     NorDir(){};
     ~NorDir(){};
+    Vec pos;
     NorDir(std::istringstream& iss, int count) {
       std::ostringstream ss;
       ss << "v" << count;
       this->tag = ss.str();
-      iss >> this->pos[0];
-      iss >> this->pos[1];
-      iss >> this->pos[2];
+      iss >> this->pos.x;
+      iss >> this->pos.y;
+      iss >> this->pos.z;
     }
-    std::string tag;
-    float pos[3];
 } ;
 
 class Face {
@@ -79,31 +84,31 @@ class Face {
     float b;
     float c;
     float d;
-    float *N;
+    Vec   N;
     float alpha;
     float beta;
     float gamma;
     float Area;
-    void D(float *p0, float *p1, float *p2) {
-      float *e1 = vec::sub(p1,p0);
-      float *e2 = vec::sub(p2,p0);
-      float *n  = vec::crossproduct(e1,e2);
-      this->a = n[0];
-      this->b = n[1];
-      this->c = n[2];
-      this->d = 0 - n[0]*p0[0] - n[1]*p0[1] - n[2]*p0[2];
-      this->N = vec::normalize(n);
-      this->Area = 0.5 * vec::len(n);
+    void D(Vec p0, Vec p1, Vec p2) {
+      Vec e1 = p1-p0;
+      Vec e2 = p2-p0;
+      Vec n  = cross(e1,e2);
+      this->a = n.x;
+      this->b = n.y;
+      this->c = n.z;
+      this->d = 0 - n.x*p0.x - n.y*p0.y - n.z*p0.z;
+      this->N = norm(n);
+      this->Area = 0.5 * len(n);
     };
-    float *getBCC(float *p, float *p0, float *p1, float *p2) {
-      float *ret = (float*) malloc(sizeof(float) * 3);
-      float *e1  = vec::sub(p1,p0);
-      float *e2  = vec::sub(p2,p0);
-      float *e3  = vec::sub(p,p1);
-      float *e4  = vec::sub(p,p2);
-      float a_area = 0.5 * vec::len(vec::crossproduct(e3,e4));
-      float b_area = 0.5 * vec::len(vec::crossproduct(e4,e2));
-      float c_area = 0.5 * vec::len(vec::crossproduct(e1,e3));
+    Vec *getBCC(Vec p, Vec p0, Vec p1, Vec p2) {
+      //float *ret = (float*) malloc(sizeof(float) * 3);
+      Vec e1  = p1-p0;
+      Vec e2  = p2-p0;
+      Vec e3  = p-p1;
+      Vec e4  = p-p2;
+      float a_area = 0.5 * len(cross(e3,e4));
+      float b_area = 0.5 * len(cross(e4,e2));
+      float c_area = 0.5 * len(cross(e1,e3));
       this->alpha = a_area / this->Area;
       this->beta  = b_area / this->Area;
       this->gamma = c_area / this->Area;
@@ -111,20 +116,17 @@ class Face {
             this->beta >= 0 && this->beta <= 1 &&
             this->gamma >= 0 && this->gamma <= 1)) { return NULL;}
       if (!(this->alpha + this->beta + this->gamma  -1 > -0.0001)) {return NULL;}
-      ret[0] = this->alpha;
-      ret[1] = this->beta;
-      ret[2] = this->gamma;
-      return ret;
+      return new Vec(this->alpha,this->beta,this->gamma);
     } ;
       
-    bool isNotZero(float *r) {
-      if ((this->a*r[0] + this->b*r[1] + this->c*r[2]) == 0){
+    bool isNotZero(Vec r) {
+      if ((this->a*r.x + this->b*r.y + this->c*r.z) == 0){
         return false;}
       return true;
     } ;
-    float t(float *o, float *r) { //takes in orgin and dir
-      return -1.0 * (this->a*o[0] + this->b*o[1] + this->c*o[2] + this->d) /
-                    (this->a*r[0] + this->b*r[1] + this->c*r[2]);
+    float t(Vec o, Vec r) { //takes in orgin and dir
+      return -1.0 * (this->a*o.x + this->b*o.y + this->c*o.z + this->d) /
+                    (this->a*r.x + this->b*r.y + this->c*r.z);
     };
 } ;
 
@@ -145,9 +147,9 @@ class Light: public Objects{
   public:
     Light(){};
     Light(std::istringstream& iss) {
-      iss >> this->position[0];
-      iss >> this->position[1];
-      iss >> this->position[2];
+      iss >> this->pos.x;
+      iss >> this->pos.y;
+      iss >> this->pos.z;
       iss >> this->w;
       iss >> this->color[0];
       iss >> this->color[1];
@@ -162,17 +164,17 @@ class Sphere: public Objects{
   public:
     Sphere(){};
     float A(){return 1.0;};
-    float B(float *o, float *d) {
-      return (float) (2.0 * (d[0] * (o[0] - this->position[0]) +
-                             d[1] * (o[1] - this->position[1]) +
-                             d[2] * (o[2] - this->position[2])));
+    float B(Vec o, Vec d) {
+      return (float) (2.0 * (d.x[0] * (o.x - this->pos.x) +
+                             d.y[1] * (o.y - this->pos.y) +
+                             d.z[2] * (o.z - this->pos.z)));
     };
     //Takes in the origin of the ray
-    float C(float *o) {
+    float C(Vec o) {
       return (float) 
-             pow((double) (o[0] - this->position[0]), 2.0) +
-             pow((double) (o[1] - this->position[1]), 2.0) +
-             pow((double) (o[2] - this->position[2]), 2.0) -
+             pow((double) (o.x - this->pos.x), 2.0) +
+             pow((double) (o.y - this->pos.y), 2.0) +
+             pow((double) (o.z - this->pos.z), 2.0) -
              pow((double) this->radius, 2.0);
     };
     ~Sphere(){};

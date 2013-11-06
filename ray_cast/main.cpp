@@ -7,9 +7,9 @@
 
 #include "scene.h"
 #include "picture.h"
-#include "vectors.h"
+#include "vector.h"
 #include "window.h"
-#include "specreflec.h"
+//#include "specreflec.h"
 
 using namespace std;
 
@@ -18,7 +18,7 @@ void print_usage() {
   cout <<  "This input needs to be a file.\n";
 }
 
-float *shadeRay(Scene*, int, float*,int);
+Vec shadeRay(Scene*, int, Vec, int);
 
 int main (int argc, char *argv[]) {
 
@@ -46,7 +46,7 @@ int main (int argc, char *argv[]) {
   int i,j;
   unsigned int k,m,n = 0;
   int counter = 0;
-  float *winpos, *raydir, *r, *bcc, *shade;
+  Vec winpos, raydir, r, bcc, shade;
   //float shade[3];
   string data = "";
   float mc = 255; // Max color value
@@ -67,9 +67,12 @@ int main (int argc, char *argv[]) {
   for ( i=0; i<scene->pixheight; i++) {
     for ( j=0; j<scene->pixwidth; j++) {
 
-      winpos = vec::add(w->ul, vec::add(
-               vec::mul(j,w->deltah), vec::mul(i,w->deltav)));
-      raydir = vec::normalize(vec::sub(winpos,scene->eye)); 
+      winpos = w-ul + w->deltah*j + w->deltav*i;
+      raydir = norm(winpos-scene->eye);
+
+      //winpos = vec::add(w->ul, vec::add(
+        //       vec::mul(j,w->deltah), vec::mul(i,w->deltav)));
+      //raydir = vec::normalize(vec::sub(winpos,scene->eye)); 
        
       char color[13]; //Set the color to the default background
       color[12] = '\0';
@@ -80,7 +83,7 @@ int main (int argc, char *argv[]) {
       float s_lowest = 100000;
       float p_lowest = 100000;
       int s_k = -1, p_k = -1, x = -1;
-      float *BCC = NULL;
+      Vec *BCC = NULL;
       for (k=0; k < scene->object.size(); k++) {
 
         Sphere *s = dynamic_cast<Sphere *>(scene->object[k]);
@@ -102,7 +105,7 @@ int main (int argc, char *argv[]) {
           }
         } else if ( p != NULL ) {
         
-          float p0[3], p1[3], p2[3];
+          Vec p0, p1, p2;
           bcc = NULL;
           for (m=0; m < p->face.size(); m++) {
 
@@ -114,28 +117,28 @@ int main (int argc, char *argv[]) {
             if (tag_1.length() == 2) { //for regular verticies
               for(n=0; n < p->vertex.size(); n++) {
                 if (tag_1.compare(p->vertex[n]->tag) == 0) {
-                  p0[0] = p->vertex[n]->pos[0];
-                  p0[1] = p->vertex[n]->pos[1];
-                  p0[2] = p->vertex[n]->pos[2];
+                  p0.x = p->vertex[n]->pos.x;
+                  p0.y = p->vertex[n]->pos.y;
+                  p0.z = p->vertex[n]->pos.z;
                 }
                   
                 else if (tag_2.compare(p->vertex[n]->tag) == 0) {
-                  p1[0] = p->vertex[n]->pos[0];
-                  p1[1] = p->vertex[n]->pos[1];
-                  p1[2] = p->vertex[n]->pos[2];
+                  p1.x = p->vertex[n]->pos.x;
+                  p1.y = p->vertex[n]->pos.y;
+                  p1.z = p->vertex[n]->pos.z;
                 }
 
                 else if (tag_3.compare(p->vertex[n]->tag) == 0) {
-                  p2[0] = p->vertex[n]->pos[0];
-                  p2[1] = p->vertex[n]->pos[1];
-                  p2[2] = p->vertex[n]->pos[2];
+                  p2.x = p->vertex[n]->pos.x;
+                  p2.y = p->vertex[n]->pos.y;
+                  p2.z = p->vertex[n]->pos.z;
                 }
               }
               p->face[m]->D(p0,p1,p2);
               if (p->face[m]->isNotZero(raydir)) {
                 p_t = p->face[m]->t(scene->eye,raydir);
                 if(p_t > 0 && p_t < p_lowest) {
-                  float *p_0 = vec::add(scene->eye,vec::mul(p_t,raydir));
+                  float *p_0 = scene->eye + p_t * raydir;
                   bcc = p->face[m]->getBCC(p_0,p0,p1,p2);
                   if (bcc != NULL) {
                     BCC = bcc;
@@ -159,7 +162,7 @@ int main (int argc, char *argv[]) {
         x = (p_lowest<s_lowest) ? p_k : s_k;
         if (x == -1) {
         }
-        r = vec::add(scene->eye,vec::mul(t,raydir));//intersection point
+        r = scene->eye + t * raydir;//intersection point
         shade = shadeRay(scene, x, r, 0); //Shade ray and change color
         
         //shade[0] = scene->object[x]->mc[0];
@@ -196,7 +199,7 @@ int main (int argc, char *argv[]) {
 
 }
 
-float * shadeRay(Scene *s, int k, float *r, int c) {
+Vec shadeRay(Scene *s, int k, Vec r, int c) {
   //Getting the values from the material for readbility
   float odr = s->object[k]->mc[0];
   float odg = s->object[k]->mc[1];
