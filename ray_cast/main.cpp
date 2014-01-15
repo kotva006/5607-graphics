@@ -9,7 +9,6 @@
 #include "picture.h"
 #include "vector.h"
 #include "window.h"
-//#include "specreflec.h"
 
 using namespace std;
 
@@ -18,7 +17,7 @@ void print_usage() {
   cout <<  "This input needs to be a file.\n";
 }
 
-Vec shadeRay(Scene*, int, Vec, int);
+//Vec shadeRay(Scene*, int, Vec, int);
 
 int main (int argc, char *argv[]) {
 
@@ -28,7 +27,7 @@ int main (int argc, char *argv[]) {
    */
   if (argc != 2) {
 		print_usage();
-    exit(0);
+    exit(1);
   }
 
   Scene *scene = new Scene();
@@ -44,13 +43,13 @@ int main (int argc, char *argv[]) {
   Picture *picture = new Picture(scene);
 
   int i,j;
-  unsigned int k,m,n = 0;
+  unsigned int k = 0, m = 0, n = 0;
   int counter = 0;
   Vec winpos, raydir, r, bcc, shade;
   //float shade[3];
   string data = "";
   float mc = 255; // Max color value
-  float t,s_t,p_t,s_t1,s_t2 = 0;
+  float t = 0, s_t = 0, p_t = 0, s_t1 = 0, s_t2 = 0;
 
   cout << "Starting loop...\n";
 
@@ -62,28 +61,23 @@ int main (int argc, char *argv[]) {
    * Finally if the color is determined it gets added to the data of the
    * picture.
    */
-  //Polygon *poly = dynamic_cast<Polygon *>(scene->object[1]);
   
   for ( i=0; i<scene->pixheight; i++) {
     for ( j=0; j<scene->pixwidth; j++) {
 
-      winpos = w-ul + w->deltah*j + w->deltav*i;
-      raydir = norm(winpos-scene->eye);
+      winpos = w->ul + (w->deltah*j) + (w->deltav*i);
+      raydir = norm(winpos - scene->eye);
 
-      //winpos = vec::add(w->ul, vec::add(
-        //       vec::mul(j,w->deltah), vec::mul(i,w->deltav)));
-      //raydir = vec::normalize(vec::sub(winpos,scene->eye)); 
-       
       char color[13]; //Set the color to the default background
       color[12] = '\0';
-      sprintf(color, "%d %d %d ", (int)(scene->bkgcolor[0] * mc),
-                                  (int)(scene->bkgcolor[1] * mc),
-                                  (int)(scene->bkgcolor[2] * mc));
+      sprintf(color, "%d %d %d ", (int)(scene->bkgcolor.x * mc),
+                                  (int)(scene->bkgcolor.y * mc),
+                                  (int)(scene->bkgcolor.z * mc));
 
       float s_lowest = 100000;
       float p_lowest = 100000;
       int s_k = -1, p_k = -1, x = -1;
-      Vec *BCC = NULL;
+      //Vec *BCC = NULL;
       for (k=0; k < scene->object.size(); k++) {
 
         Sphere *s = dynamic_cast<Sphere *>(scene->object[k]);
@@ -105,53 +99,6 @@ int main (int argc, char *argv[]) {
           }
         } else if ( p != NULL ) {
         
-          Vec p0, p1, p2;
-          bcc = NULL;
-          for (m=0; m < p->face.size(); m++) {
-
-            string tag_1 = p->face[m]->data[0];
-            string tag_2 = p->face[m]->data[1];
-            string tag_3 = p->face[m]->data[2];
-
-
-            if (tag_1.length() == 2) { //for regular verticies
-              for(n=0; n < p->vertex.size(); n++) {
-                if (tag_1.compare(p->vertex[n]->tag) == 0) {
-                  p0.x = p->vertex[n]->pos.x;
-                  p0.y = p->vertex[n]->pos.y;
-                  p0.z = p->vertex[n]->pos.z;
-                }
-                  
-                else if (tag_2.compare(p->vertex[n]->tag) == 0) {
-                  p1.x = p->vertex[n]->pos.x;
-                  p1.y = p->vertex[n]->pos.y;
-                  p1.z = p->vertex[n]->pos.z;
-                }
-
-                else if (tag_3.compare(p->vertex[n]->tag) == 0) {
-                  p2.x = p->vertex[n]->pos.x;
-                  p2.y = p->vertex[n]->pos.y;
-                  p2.z = p->vertex[n]->pos.z;
-                }
-              }
-              p->face[m]->D(p0,p1,p2);
-              if (p->face[m]->isNotZero(raydir)) {
-                p_t = p->face[m]->t(scene->eye,raydir);
-                if(p_t > 0 && p_t < p_lowest) {
-                  float *p_0 = scene->eye + p_t * raydir;
-                  bcc = p->face[m]->getBCC(p_0,p0,p1,p2);
-                  if (bcc != NULL) {
-                    BCC = bcc;
-                    p_lowest = p_t;
-                    p_k = k;
-                  }
-                }
-              }
-            } else if ((tag_1.substr(1,1)).compare("n") == 0) {
-            } else if ((tag_1.substr(1,1)).compare("t") == 0) {
-            }
-
-          }
 
         } else {
           printf("Null s and p ");
@@ -160,17 +107,16 @@ int main (int argc, char *argv[]) {
       if (p_k != -1 || s_k != -1) {
         t = (p_lowest<s_lowest) ? p_lowest : s_lowest;
         x = (p_lowest<s_lowest) ? p_k : s_k;
-        if (x == -1) {
-        }
-        r = scene->eye + t * raydir;//intersection point
-        shade = shadeRay(scene, x, r, 0); //Shade ray and change color
+
+        //r = scene->eye + t * raydir;//intersection point
+        //shade = shadeRay(scene, x, r, 0); //Shade ray and change color
         
-        //shade[0] = scene->object[x]->mc[0];
-        //shade[1] = scene->object[x]->mc[1];
-        //shade[2] = scene->object[x]->mc[2];
-        sprintf(color, "%d %d %d ", (int) (shade[0] * mc),
-                                    (int) (shade[1] * mc),
-                                    (int) (shade[2] * mc));
+        shade.x = scene->object[x]->mc[0];
+        shade.y = scene->object[x]->mc[1];
+        shade.z = scene->object[x]->mc[2];
+        sprintf(color, "%d %d %d ", (int) (shade.x * mc),
+                                    (int) (shade.y * mc),
+                                    (int) (shade.z * mc));
       }
       // This assures we don't go over the 70 char per line limit of ppm
       counter++;
@@ -198,7 +144,7 @@ int main (int argc, char *argv[]) {
   return 0;
 
 }
-
+/*
 Vec shadeRay(Scene *s, int k, Vec r, int c) {
   //Getting the values from the material for readbility
   float odr = s->object[k]->mc[0];
@@ -368,4 +314,4 @@ Vec shadeRay(Scene *s, int k, Vec r, int c) {
 
   return ret;
 
-}
+} */

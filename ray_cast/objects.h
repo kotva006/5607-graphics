@@ -165,9 +165,9 @@ class Sphere: public Objects{
     Sphere(){};
     float A(){return 1.0;};
     float B(Vec o, Vec d) {
-      return (float) (2.0 * (d.x[0] * (o.x - this->pos.x) +
-                             d.y[1] * (o.y - this->pos.y) +
-                             d.z[2] * (o.z - this->pos.z)));
+      return (float) (2.0 * (d.x * (o.x - this->pos.x) +
+                             d.y * (o.y - this->pos.y) +
+                             d.z * (o.z - this->pos.z)));
     };
     //Takes in the origin of the ray
     float C(Vec o) {

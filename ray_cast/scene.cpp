@@ -4,7 +4,6 @@
 #include <iostream>
 
 #include "scene.h"
-#include "vector.h"
 #include "objects.h"
 
 using namespace std;

@@ -3,7 +3,6 @@
 
 #include "window.h"
 #include "scene.h"
-#include "vector.h"
 
 #define PI 3.14159265
 
@@ -30,16 +29,16 @@ Window::Window(Scene *s) {
 
   this->ul = s->eye + (s->viewdist*n) + (this->h/2.0)*v - (this->w/2.0)*u;
   this->ur = s->eye + (s->viewdist*n) + (this->h/2.0)*v + (this->w/2.0)*u;
-  this->lr = s->eye + (s->viewdist*n) - (this->h/2.0)*v - (this->w/2.0)*u;
-  this->ll = s->eye + (s->viewdist*n) - (this->h/2.0)*v + (this->w/2.0)*u;
+  this->ll = s->eye + (s->viewdist*n) - (this->h/2.0)*v - (this->w/2.0)*u;
+  this->lr = s->eye + (s->viewdist*n) - (this->h/2.0)*v + (this->w/2.0)*u;
 
-  //std::cout << "UL: " << this->ul[0] << " " << this->ul[1] << " " << this->ul[2] << "\n";
-  //std::cout << "UR: " << this->ur[0] << " " << this->ur[1] << " " << this->ur[2] << "\n";
-  //std::cout << "LL: " << this->ll[0] << " " << this->ll[1] << " " << this->ll[2] << "\n";
-  //std::cout << "LR: " << this->lr[0] << " " << this->lr[1] << " " << this->lr[2] << "\n";
+  std::cout << "UL: " << this->ul.x << " " << this->ul.y << " " << this->ul.z << "\n";
+  std::cout << "UR: " << this->ur.x << " " << this->ur.y << " " << this->ur.z << "\n";
+  std::cout << "LL: " << this->ll.x << " " << this->ll.y << " " << this->ll.z << "\n";
+  std::cout << "LR: " << this->lr.x << " " << this->lr.y << " " << this->lr.z << "\n";
 
-  this->deltah = (this->ur-this->ul) / (s->pixwidth - 1);
-  this->deltav = (this->ll-this->ul) / (s->pixheight - 1);
+  this->deltah = (this->ur - this->ul) / (s->pixwidth - 1);
+  this->deltav = (this->ll - this->ul) / (s->pixheight - 1);
 
 }
 

@@ -3,8 +3,8 @@ CFLAGS =-c -Wall
 
 
 
-all: main.o scene.o picture.o vectors.o window.o specreflec.o
-	$(CC) -Wall -g main.o scene.o picture.o vectors.o window.o specreflec.o -o ray
+all: main.o scene.o picture.o window.o vector.o
+	$(CC) -Wall -g main.o scene.o picture.o window.o vector.o -o ray
 
 main.o: main.cpp vector.h
 	$(CC) $(CFLAGS) main.cpp
@@ -20,6 +20,9 @@ vectors.o: vectors.cpp vectors.h
 
 window.o: window.cpp window.h
 	$(CC) $(CFLAGS) window.cpp
+
+vector.o:	vector.h vector.cpp
+	$(CC) $(CFLAGS) vector.cpp
 
 specreflec.o:	specreflec.cpp specreflec.h
 	$(CC) $(CFLAGS) specreflec.cpp
